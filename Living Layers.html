@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aliveness — Layer Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; background: #040c0a; overflow: hidden; }
+
+    /* ── Fixed hero ── */
+    #hero { position: fixed; inset: 0; z-index: 1; }
+
+    .hero-bg {
+      position: absolute;
+      inset: -7%;
+      background: url('uploads/hero-bg.png') center / cover no-repeat;
+      will-change: transform;
+      animation: breathe 9s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { filter: brightness(1.00) saturate(1.00); }
+      50%       { filter: brightness(1.05) saturate(1.08); }
+    }
+
+    #hero canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+
+    /* WebGL nature canvas — hidden until the final section */
+    #cNature { opacity: 0; }
+
+    .vignette {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 50% 50%, transparent 48%, rgba(2,5,4,0.65) 100%);
+    }
+
+    /* ── Scroll container ── */
+    #scrollWrap {
+      position: fixed; inset: 0; z-index: 5;
+      overflow-y: scroll; background: transparent;
+      -ms-overflow-style: none; scrollbar-width: none;
+    }
+    #scrollWrap::-webkit-scrollbar { display: none; }
+    .slide { height: 100vh; background: transparent; }
+
+    /* ── Layer manifest — top right ── */
+    #manifest {
+      position: fixed;
+      top: 48px; right: 56px;
+      z-index: 20; opacity: 0;
+    }
+
+    .m-header {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 400;
+      letter-spacing: 0.22em; color: rgba(255,255,255,0.28);
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+
+    .m-rule { height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 13px; }
+
+    .m-row {
+      display: flex; align-items: center;
+      gap: 11px; margin-bottom: 8px;
+      padding: 3px 6px; border-radius: 4px;
+    }
+
+    .m-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.70);
+      flex-shrink: 0;
+      transition: background 0.55s ease, transform 0.45s ease, border-color 0.55s ease;
+    }
+
+    .m-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 400;
+      letter-spacing: 0.04em; color: rgba(255,255,255,0.62);
+      transition: color 0.55s ease, text-decoration 0.3s ease;
+    }
+
+    /* Active mode row */
+    .m-row.mode-active .m-dot {
+      background: rgba(172,238,192,0.92);
+      animation: dotGlow 2.4s ease-in-out infinite;
+    }
+    .m-row.mode-active .m-name { color: rgba(192,244,208,0.85); }
+    .m-row { cursor: pointer; transition: opacity 0.2s; }
+    .m-row:not(.mode-active) { opacity: 0.55; }
+    .m-row:not(.mode-active):hover { opacity: 0.85; }
+
+    @keyframes dotGlow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(172,238,192,0); }
+      50%      { box-shadow: 0 0 0 4px rgba(172,238,192,0.20); }
+    }
+
+    /* Latent (Nature, before reveal) — hollow ring, dim */
+    .m-row.latent .m-dot {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.22);
+      transform: scale(0.92);
+    }
+    .m-row.latent .m-name { color: rgba(255,255,255,0.26); }
+
+    /* Nature, revealed */
+    .m-row[data-l="nature"].lit .m-dot {
+      background: rgba(172,238,192,0.92);
+      border: none;
+      transform: scale(1);
+      animation: dotGlow 2.4s ease-in-out infinite;
+    }
+    .m-row[data-l="nature"].lit .m-name { color: rgba(192,244,208,0.85); }
+
+    /* Off (struck) state — generic */
+    .m-row.off .m-dot { background: rgba(255,255,255,0.10); transform: scale(0.60); border: none; }
+    .m-row.off .m-name { color: rgba(255,255,255,0.16); text-decoration: line-through; }
+
+
+
+    /* ── Section counter — bottom right ── */
+    #counter {
+      position: fixed; right: 56px; bottom: 56px; z-index: 20;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.20em;
+      color: rgba(255,255,255,0.22); opacity: 0;
+    }
+
+    /* ── Description blocks — bottom left ── */
+    .desc {
+      position: fixed; bottom: 80px; left: 80px; z-index: 20;
+      max-width: 520px; opacity: 0; pointer-events: none;
+    }
+
+    .desc .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.26em;
+      color: rgba(172,238,192,0.65); text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .desc h2 {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic; font-weight: 400;
+      font-size: clamp(30px, 3.2vw, 46px);
+      line-height: 1.08; letter-spacing: -0.02em;
+      color: rgba(255,255,255,0.92); margin-bottom: 22px;
+    }
+
+    .desc p {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 300;
+      line-height: 1.72; letter-spacing: 0.005em;
+      color: rgba(255,255,255,0.50);
+    }
+
+    /* ── Removed layer flash (centre bottom) ── */
+    #layerFlash {
+      position: fixed; bottom: 56px; left: 50%; transform: translateX(-50%);
+      z-index: 20; pointer-events: none; opacity: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.40); text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── Nature controls (final section only) ── */
+    #natureCtrl {
+      position: fixed; top: 48px; left: 56px; z-index: 30;
+      width: 224px; opacity: 0; pointer-events: none;
+      background: rgba(4,11,8,0.66);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 8px; padding: 16px 16px 18px;
+      backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    }
+    .ctrl-header {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.18em;
+      color: rgba(172,238,192,0.7); text-transform: uppercase;
+    }
+    #ctrlReset {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4);
+      background: transparent; border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 4px; padding: 3px 7px; cursor: pointer;
+      text-transform: uppercase; transition: color 0.15s, border-color 0.15s;
+    }
+    #ctrlReset:hover { color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.3); }
+    .ctrl-rule { height: 1px; background: rgba(255,255,255,0.08); margin: 13px 0 16px; }
+    .ctrl { margin-bottom: 15px; }
+    .ctrl:last-child { margin-bottom: 2px; }
+    .ctrl-top {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 9px;
+    }
+    .ctrl-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; letter-spacing: 0.03em;
+      color: rgba(255,255,255,0.66);
+    }
+    .ctrl-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px; color: rgba(172,238,192,0.8);
+    }
+    .ctrl input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 2px; border-radius: 2px;
+      background: rgba(255,255,255,0.16); outline: none; cursor: pointer;
+    }
+    .ctrl input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: rgba(180,240,200,0.95); cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(172,238,192,0.12);
+    }
+    .ctrl input[type=range]::-moz-range-thumb {
+      width: 11px; height: 11px; border-radius: 50%; border: none;
+      background: rgba(180,240,200,0.95); cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      #manifest { top: 24px; right: 24px; }
+      #counter  { right: 24px; bottom: 32px; }
+      .desc { left: 24px; right: 24px; bottom: 48px; max-width: 100%; }
+      #natureCtrl { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Fixed animated hero ── -->
+<div id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <canvas id="cNature"></canvas>
+  <canvas id="cMosaic"></canvas>
+  <canvas id="cParticles"></canvas>
+  <div class="vignette"></div>
+</div>
+
+<!-- ── Transparent scroll scaffold (6 × 100vh) ── -->
+<div id="scrollWrap">
+  <div id="scrollContent">
+    <div class="slide" data-s="0"></div>
+    <div class="slide" data-s="1"></div>
+    <div class="slide" data-s="2"></div>
+    <div class="slide" data-s="3"></div>
+    <div class="slide" data-s="4"></div>
+    <div class="slide" data-s="5"></div>
+  </div>
+</div>
+
+<!-- ── Layer manifest ── -->
+<div id="manifest">
+  <div class="m-header">FIG 0.1 · VIEW MODE</div>
+  <div class="m-rule"></div>
+  <div class="m-row mode-active" data-mode="human" id="modeHuman">
+    <div class="m-dot"></div><span class="m-name">human</span>
+  </div>
+  <div class="m-row" data-mode="ai" id="modeAi">
+    <div class="m-dot"></div><span class="m-name">ai</span>
+  </div>
+</div>
+
+<!-- ── Section counter ── -->
+<div id="counter">01 · 06</div>
+
+<!-- ── Removed layer flash ── -->
+<div id="layerFlash"></div>
+
+<!-- ── Breath section text (section 05) ── -->
+<div class="desc" id="breathDesc">
+  <div class="eyebrow">Layer 01 · Foundation</div>
+  <h2>Breath —<br>the image itself.</h2>
+  <p>The background pulses brightness and saturation on a 9-second sine cycle. This is the most primitive synthetic signal of life. Everything else sits on top of this heartbeat. If you removed all other effects, the scene would still feel inhabited.</p>
+</div>
+
+<!-- ── Nature section text (section 06 — pre-foundation) ── -->
+<div class="desc" id="natureDesc">
+  <div class="eyebrow">Layer 00 · Pre-foundation</div>
+  <h2>Beneath the breath,<br>the world itself.</h2>
+  <p>Lift away even the heartbeat and something stays: grass leaning in the wind, clouds drawn slowly across the valley. This motion was never written into the page — it was already there, caught in the instant the image was made. The first aliveness isn't a signal we add. It's the world, continuing without us.</p>
+</div>
+
+<!-- ── Nature controls (final section) ── -->
+<div id="natureCtrl">
+  <div class="ctrl-header">
+    <span>Nature · Controls</span>
+    <button id="ctrlReset">Reset</button>
+  </div>
+  <div class="ctrl-rule"></div>
+  <div id="ctrlBody"></div>
+</div>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// ════════════════════════════════════════════════════════════════
+// REFS
+// ════════════════════════════════════════════════════════════════
+const heroBg     = document.getElementById('heroBg');
+const cNature    = document.getElementById('cNature');
+const cMosaic    = document.getElementById('cMosaic');
+const cParticles = document.getElementById('cParticles');
+const mCtx       = cMosaic.getContext('2d');
+const pCtx       = cParticles.getContext('2d');
+const scrollWrap = document.getElementById('scrollWrap');
+const manifest   = document.getElementById('manifest');
+const counter    = document.getElementById('counter');
+const breathDesc = document.getElementById('breathDesc');
+const natureDesc = document.getElementById('natureDesc');
+const layerFlash = document.getElementById('layerFlash');
+const natureCtrl = document.getElementById('natureCtrl');
+
+let W = 0, H = 0;
+let mouseX = 0.5, mouseY = 0.5;
+let targetMX = 0.5, targetMY = 0.5;
+let currentSlide = 0; // skip first-load transition
+
+const CELL = 9;
+const [MR, MG, MB] = [210, 240, 220];
+
+// ── Canvas-layer fade multipliers (GSAP tweens these)
+const fade = { sparkles: 1, mosaic: 1, scan: 1, parallax: 1 };
+
+// ── Nature layer state (GSAP tweens these)
+const natureState = { intensity: 0, opacity: 0 };
+
+// ── Nature shader parameters (live-tunable via the sliders panel)
+const natureParams = {
+  grassAmp:   0.0014, // grass sway amplitude
+  grassSpeed: 0.42,   // grass sway speed
+  grassTop:   0.55,   // how far up the grass effect reaches
+  cloudAmp:   0.0010, // cloud drift amplitude
+  cloudSpeed: 0.05,   // cloud drift speed
+};
+const NATURE_DEFAULTS = { ...natureParams };
+const NCFG = {
+  grassAmp:   { min: 0,    max: 0.004, label: 'Grass sway'  },
+  grassSpeed: { min: 0,    max: 1.4,   label: 'Grass speed' },
+  grassTop:   { min: 0.20, max: 0.90,  label: 'Grass reach' },
+  cloudAmp:   { min: 0,    max: 0.003, label: 'Cloud drift' },
+  cloudSpeed: { min: 0,    max: 0.18,  label: 'Cloud speed' },
+};
+
+// ── Per-section active state
+const CONFIGS = [
+  { sparkles:1, mosaic:1, scan:1, parallax:1 }, // 0 — all
+  { sparkles:0, mosaic:1, scan:1, parallax:1 }, // 1 — −stream sparkles
+  { sparkles:0, mosaic:1, scan:0, parallax:1 }, // 2 — −scan wave
+  { sparkles:0, mosaic:0, scan:0, parallax:1 }, // 3 — −mosaic
+  { sparkles:0, mosaic:0, scan:0, parallax:0 }, // 4 — just breath
+  { sparkles:0, mosaic:0, scan:0, parallax:0 }, // 5 — pre-foundation (nature)
+];
+
+// Strike-through layers and the section that removes each
+const LAYER_META = {
+  sparkles: { removedAt: 1, label: 'STREAM SPARKLES — OFFLINE' },
+  scan:     { removedAt: 2, label: 'SCAN WAVE — OFFLINE' },
+  mosaic:   { removedAt: 3, label: 'MOSAIC — OFFLINE' },
+  parallax: { removedAt: 4, label: 'PARALLAX — OFFLINE' },
+};
+
+const TOTAL = CONFIGS.length;     // 6
+const LAST  = TOTAL - 1;          // 5
+const BREATH_SLIDE = LAST - 1;    // 4
+
+// ════════════════════════════════════════════════════════════════
+// RESIZE
+// ════════════════════════════════════════════════════════════════
+function resize() {
+  W = cMosaic.width = cParticles.width = window.innerWidth;
+  H = cMosaic.height = cParticles.height = window.innerHeight;
+  cNature.width  = window.innerWidth;
+  cNature.height = window.innerHeight;
+  spawnParticles();
+}
+window.addEventListener('resize', resize);
+
+// ════════════════════════════════════════════════════════════════
+// MOUSE
+// ════════════════════════════════════════════════════════════════
+window.addEventListener('mousemove', e => {
+  targetMX = e.clientX / W;
+  targetMY = e.clientY / H;
+});
+
+// ════════════════════════════════════════════════════════════════
+// MATH UTILS
+// ════════════════════════════════════════════════════════════════
+function cellHash(c, r) {
+  const n = Math.sin(c * 127.1 + r * 311.7) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+function noise(c, r, t) {
+  return (
+    Math.sin(c * 0.055 + t * 0.38) * Math.cos(r * 0.065 + t * 0.29) * 0.50 +
+    Math.sin(c * 0.110 - t * 0.21) * Math.cos(r * 0.090 + t * 0.36) * 0.30 +
+    Math.sin(c * 0.230 + t * 0.57) * Math.cos(r * 0.175 - t * 0.44) * 0.20
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// MOSAIC
+// ════════════════════════════════════════════════════════════════
+function drawMosaic(t) {
+  mCtx.clearRect(0, 0, W, H);
+  if (fade.mosaic < 0.01) return;
+
+  mCtx.font = `${CELL - 2}px "JetBrains Mono", monospace`;
+  mCtx.textAlign = 'left';
+  mCtx.textBaseline = 'top';
+
+  const cols  = Math.ceil(W / CELL) + 1;
+  const rows  = Math.ceil(H / CELL) + 1;
+  const scanX = ((t * 0.067) % 1) * (W + 320) - 160;
+
+  const whiteMap  = new Map();
+  const mintCells = [];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const h   = cellHash(c, r);
+      const vis = Math.sin(h * 6.283 + t * (0.18 + h * 0.44)) * 0.5 + 0.5;
+      if (vis < 0.63) continue;
+
+      const px = c * CELL;
+      const py = r * CELL;
+      const n  = noise(c, r, t);
+      let   op = (0.03 + (n * 0.5 + 0.5) * 0.09) * fade.mosaic;
+
+      const scanStr = Math.max(0, 1 - Math.abs(px - scanX) / 112) * 0.90 * fade.scan;
+      op = Math.min(0.92, op + scanStr);
+
+      const digit = h > 0.5 ? '1' : '0';
+
+      if (scanStr > 0.52 && h > 0.80 && fade.scan > 0.2) {
+        mintCells.push({ px, py, op: Math.min(0.88, op * 2.8), digit });
+      } else {
+        const bkt = (Math.round(op * 25) / 25).toFixed(2);
+        if (!whiteMap.has(bkt)) whiteMap.set(bkt, []);
+        whiteMap.get(bkt).push({ px, py, digit });
+      }
+    }
+  }
+
+  for (const [op, cells] of whiteMap) {
+    mCtx.fillStyle = `rgba(255,255,255,${op})`;
+    for (const { px, py, digit } of cells) mCtx.fillText(digit, px, py);
+  }
+  for (const { px, py, op, digit } of mintCells) {
+    mCtx.fillStyle = `rgba(${MR},${MG},${MB},${op})`;
+    mCtx.fillText(digit, px, py);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// STREAM SPARKLES (caustic flickers in the creek region)
+// ════════════════════════════════════════════════════════════════
+class Sparkle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x    = W * 0.36 + Math.random() * W * 0.28;
+    this.y    = H * 0.60 + Math.random() * H * 0.40;
+    this.life = Math.random();
+    this.spd  = 0.010 + Math.random() * 0.022;
+    this.size = 0.7 + Math.random() * 3.8;
+  }
+  step() { this.life += this.spd; if (this.life >= 1) this.reset(); }
+  draw(ctx) {
+    const a = Math.sin(this.life * Math.PI) * 0.72 * fade.sparkles;
+    if (a < 0.005) return;
+    ctx.fillStyle = `rgba(195,238,255,${a})`;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, 6.283);
+    ctx.fill();
+  }
+}
+
+const sparks = [];
+function spawnParticles() {
+  sparks.length = 0;
+  for (let i = 0; i < 24; i++) sparks.push(new Sparkle());
+}
+
+function drawParticles() {
+  pCtx.clearRect(0, 0, W, H);
+  for (const s of sparks) { s.step(); s.draw(pCtx); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// PARALLAX
+// ════════════════════════════════════════════════════════════════
+function tickParallax() {
+  mouseX += (targetMX - mouseX) * 0.045;
+  mouseY += (targetMY - mouseY) * 0.045;
+  const dx = (mouseX - 0.5) * -30 * fade.parallax;
+  const dy = (mouseY - 0.5) * -22 * fade.parallax;
+  heroBg.style.transform = `translate(${dx}px,${dy}px) scale(1.12)`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// NATURE LAYER — WebGL subtle displacement (grass sway + cloud drift)
+// ════════════════════════════════════════════════════════════════
+const gl = cNature.getContext('webgl') || cNature.getContext('experimental-webgl');
+let glReady = false, glProgram, glTex, imgW = 1, imgH = 1;
+let uTimeLoc, uIntensityLoc, uResLoc, uImgLoc,
+    uGrassAmpLoc, uGrassSpeedLoc, uGrassTopLoc, uCloudAmpLoc, uCloudSpeedLoc;
+
+function compile(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.warn(gl.getShaderInfoLog(s));
+  return s;
+}
+
+function initGL() {
+  if (!gl) return;
+
+  const vs = `
+    attribute vec2 aPos;
+    varying vec2 vUv;
+    void main(){
+      vUv = (aPos + 1.0) * 0.5;   // uv.y=0 bottom(grass), 1 top(sky) — FLIP_Y on
+      gl_Position = vec4(aPos, 0.0, 1.0);
+    }`;
+
+  const fs = `
+    precision mediump float;
+    uniform sampler2D uTex;
+    uniform float uTime;
+    uniform float uIntensity;
+    uniform vec2  uRes;
+    uniform vec2  uImg;
+    uniform float uGrassAmp;
+    uniform float uGrassSpeed;
+    uniform float uGrassTop;
+    uniform float uCloudAmp;
+    uniform float uCloudSpeed;
+    varying vec2 vUv;
+
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
+    float noise(vec2 p){
+      vec2 i=floor(p), f=fract(p);
+      float a=hash(i), b=hash(i+vec2(1.0,0.0)), c=hash(i+vec2(0.0,1.0)), d=hash(i+vec2(1.0,1.0));
+      vec2 u=f*f*(3.0-2.0*f);
+      return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+    }
+
+    void main(){
+      // cover-fit (replicate background-size: cover)
+      float imgA = uImg.x / uImg.y;
+      float resA = uRes.x / uRes.y;
+      vec2 uv = vUv;
+      if (resA > imgA) { uv.y = (uv.y - 0.5) * (imgA / resA) + 0.5; }
+      else             { uv.x = (uv.x - 0.5) * (resA / imgA) + 0.5; }
+
+      // region masks
+      float grassMask = 1.0 - smoothstep(0.0, uGrassTop, uv.y); // strong at bottom
+      float skyMask   = smoothstep(0.42, 1.0, uv.y);            // strong at top
+
+      // grass — ONE slow, spatially-coherent lean (no flutter, no gusts)
+      float sway = sin(uTime*uGrassSpeed + uv.y*2.2) * uGrassAmp;
+      vec2 grassOff = vec2(sway, 0.0) * grassMask;
+
+      // clouds — slow horizontal drift only (no vertical warp)
+      float cx = sin(uTime*uCloudSpeed) * uCloudAmp;
+      vec2 cloudOff = vec2(cx, 0.0) * skyMask;
+
+      vec2 off = (grassOff + cloudOff) * uIntensity;
+      gl_FragColor = texture2D(uTex, uv + off);
+    }`;
+
+  glProgram = gl.createProgram();
+  gl.attachShader(glProgram, compile(gl.VERTEX_SHADER, vs));
+  gl.attachShader(glProgram, compile(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(glProgram);
+  gl.useProgram(glProgram);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1,-1,  1,-1,  -1,1,
+    -1, 1,  1,-1,   1,1,
+  ]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(glProgram, 'aPos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  uTimeLoc      = gl.getUniformLocation(glProgram, 'uTime');
+  uIntensityLoc = gl.getUniformLocation(glProgram, 'uIntensity');
+  uResLoc       = gl.getUniformLocation(glProgram, 'uRes');
+  uImgLoc       = gl.getUniformLocation(glProgram, 'uImg');
+  uGrassAmpLoc   = gl.getUniformLocation(glProgram, 'uGrassAmp');
+  uGrassSpeedLoc = gl.getUniformLocation(glProgram, 'uGrassSpeed');
+  uGrassTopLoc   = gl.getUniformLocation(glProgram, 'uGrassTop');
+  uCloudAmpLoc   = gl.getUniformLocation(glProgram, 'uCloudAmp');
+  uCloudSpeedLoc = gl.getUniformLocation(glProgram, 'uCloudSpeed');
+
+  glTex = gl.createTexture();
+  const img = new Image();
+  img.onload = () => {
+    imgW = img.naturalWidth; imgH = img.naturalHeight;
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.bindTexture(gl.TEXTURE_2D, glTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    glReady = true;
+  };
+  img.src = 'uploads/hero-bg.png';
+}
+initGL();
+
+function drawNature(t) {
+  if (!glReady || natureState.opacity < 0.002) return;
+  cNature.style.opacity = natureState.opacity;
+  gl.viewport(0, 0, cNature.width, cNature.height);
+  gl.useProgram(glProgram);
+  gl.uniform1f(uTimeLoc, t);
+  gl.uniform1f(uIntensityLoc, natureState.intensity);
+  gl.uniform2f(uResLoc, cNature.width, cNature.height);
+  gl.uniform2f(uImgLoc, imgW, imgH);
+  gl.uniform1f(uGrassAmpLoc,   natureParams.grassAmp);
+  gl.uniform1f(uGrassSpeedLoc, natureParams.grassSpeed);
+  gl.uniform1f(uGrassTopLoc,   natureParams.grassTop);
+  gl.uniform1f(uCloudAmpLoc,   natureParams.cloudAmp);
+  gl.uniform1f(uCloudSpeedLoc, natureParams.cloudSpeed);
+  gl.bindTexture(gl.TEXTURE_2D, glTex);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
+
+// ════════════════════════════════════════════════════════════════
+// SECTION TRANSITION
+// ════════════════════════════════════════════════════════════════
+let flashTween = null;
+
+function goToSlide(idx) {
+  if (idx === currentSlide) return;
+  currentSlide = idx;
+  const cfg = CONFIGS[idx];
+
+  // ── Canvas-layer fades
+  gsap.to(fade, {
+    duration: 1.1, ease: 'power2.inOut',
+    sparkles: cfg.sparkles, mosaic: cfg.mosaic,
+    scan: cfg.scan, parallax: cfg.parallax,
+  });
+
+  // ── Strike-through layers
+  let removedLabel = null;
+  Object.entries(LAYER_META).forEach(([id, meta]) => {
+    const row = document.querySelector(`.m-row[data-l="${id}"]`);
+    if (!row) return;
+    const going = idx >= meta.removedAt;
+    if (going && !row.classList.contains('off')) {
+      gsap.timeline()
+        .to(row, { backgroundColor: 'rgba(255,50,50,0.08)', duration: 0.2 })
+        .to(row, { backgroundColor: 'transparent', duration: 0.55 });
+      removedLabel = meta.label;
+    }
+    row.classList.toggle('off', going);
+  });
+
+  // ── heroBg / nature crossfade (kept for scroll logic)
+  if (idx === LAST) {
+    if (gl) {
+      gsap.to(heroBg,      { opacity: 0, duration: 1.5, ease: 'power2.inOut' });
+      gsap.to(natureState, { opacity: 1, intensity: 1, duration: 2.2, ease: 'power2.out' });
+    }
+  } else {
+    gsap.to(heroBg,      { opacity: 1, duration: 1.0, ease: 'power2.inOut' });
+    gsap.to(natureState, { opacity: 0, intensity: 0, duration: 1.0, ease: 'power2.in' });
+  }
+
+  // ── Centre flash for the just-removed layer
+  if (removedLabel) {
+    if (flashTween) flashTween.kill();
+    layerFlash.textContent = `− ${removedLabel}`;
+    flashTween = gsap.timeline()
+      .to(layerFlash, { opacity: 1, duration: 0.25, ease: 'power2.out' })
+      .to(layerFlash, { opacity: 0, duration: 0.7, ease: 'power2.in', delay: 1.2 });
+  }
+
+  // ── Counter
+  counter.textContent = `0${idx + 1} · 0${TOTAL}`;
+
+  // ── Description blocks
+  gsap.to(breathDesc, {
+    opacity: idx === BREATH_SLIDE ? 1 : 0, y: idx === BREATH_SLIDE ? 0 : 10,
+    duration: idx === BREATH_SLIDE ? 1.0 : 0.4,
+    ease: idx === BREATH_SLIDE ? 'power2.out' : 'power2.in',
+    delay: idx === BREATH_SLIDE ? 0.6 : 0,
+  });
+  gsap.to(natureDesc, {
+    opacity: idx === LAST ? 1 : 0, y: idx === LAST ? 0 : 10,
+    duration: idx === LAST ? 1.0 : 0.4,
+    ease: idx === LAST ? 'power2.out' : 'power2.in',
+    delay: idx === LAST ? 1.0 : 0,
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// GSAP SCROLLTRIGGER — custom scroller proxy + snap
+// ════════════════════════════════════════════════════════════════
+ScrollTrigger.scrollerProxy(scrollWrap, {
+  scrollTop(val) {
+    if (arguments.length) scrollWrap.scrollTop = val;
+    return scrollWrap.scrollTop;
+  },
+  getBoundingClientRect() {
+    return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+  },
+});
+scrollWrap.addEventListener('scroll', ScrollTrigger.update);
+window.addEventListener('resize', () => ScrollTrigger.refresh());
+
+ScrollTrigger.create({
+  trigger:  '#scrollContent',
+  scroller: scrollWrap,
+  start:    'top top',
+  end:      'bottom bottom',
+  snap: {
+    snapTo:   1 / LAST,
+    duration: { min: 0.35, max: 0.65 },
+    ease:     'power2.inOut',
+  },
+  onUpdate(self) {
+    const idx = Math.round(self.progress * LAST);
+    goToSlide(idx);
+  },
+});
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+resize();
+gsap.set([breathDesc, natureDesc], { y: 12 });
+gsap.set(natureCtrl, { x: -14 });
+
+// Build the nature control sliders
+const ctrlBody = document.getElementById('ctrlBody');
+const pctOf = k => Math.round((natureParams[k] - NCFG[k].min) / (NCFG[k].max - NCFG[k].min) * 100);
+Object.entries(NCFG).forEach(([k, c]) => {
+  const row = document.createElement('div');
+  row.className = 'ctrl';
+  row.innerHTML =
+    '<div class="ctrl-top"><span class="ctrl-label">' + c.label + '</span>' +
+    '<span class="ctrl-val">' + pctOf(k) + '%</span></div>' +
+    '<input type="range" min="0" max="100" value="' + pctOf(k) + '">';
+  const input = row.querySelector('input');
+  const valEl = row.querySelector('.ctrl-val');
+  input.dataset.k = k;
+  input.addEventListener('input', () => {
+    const p = +input.value;
+    natureParams[k] = c.min + (p / 100) * (c.max - c.min);
+    valEl.textContent = p + '%';
+  });
+  ctrlBody.appendChild(row);
+});
+document.getElementById('ctrlReset').addEventListener('click', () => {
+  Object.assign(natureParams, NATURE_DEFAULTS);
+  ctrlBody.querySelectorAll('input').forEach(input => {
+    const k = input.dataset.k;
+    input.value = pctOf(k);
+    input.parentElement.querySelector('.ctrl-val').textContent = pctOf(k) + '%';
+  });
+});
+
+gsap.to(manifest, { opacity: 1, duration: 1.0, delay: 0.7, ease: 'power2.out' });
+gsap.to(counter,  { opacity: 1, duration: 1.0, delay: 0.9, ease: 'power2.out' });
+
+// ════════════════════════════════════════════════════════════════
+// ANIMATION LOOP
+// ════════════════════════════════════════════════════════════════
+function loop(ts) {
+  const t = ts * 0.001;
+  drawMosaic(t);
+  drawParticles();
+  tickParallax();
+  drawNature(t);
+  requestAnimationFrame(loop);
+}
+document.fonts.ready.then(() => requestAnimationFrame(loop));
+
+// ════════════════════════════════════════════════════════════════
+// ALL 5 LAYERS — ALWAYS ON
+// ════════════════════════════════════════════════════════════════
+// The background is fully alive at all times; human/ai only
+// controls what content is shown on top (via postMessage to parent).
+Object.assign(fade, { sparkles:1, mosaic:1, scan:1, parallax:1 });
+
+// ── Manifest mode sync (visual only — content lives in parent) ────
+function setManifestMode(name) {
+  document.querySelectorAll('.m-row[data-mode]').forEach(r =>
+    r.classList.toggle('mode-active', r.dataset.mode === name)
+  );
+}
+
+function handleModeClick(name) {
+  setManifestMode(name);
+  window.parent.postMessage({ type: 'datahub-mode', mode: name }, '*');
+}
+
+document.getElementById('modeHuman').addEventListener('click', () => handleModeClick('human'));
+document.getElementById('modeAi').addEventListener('click',    () => handleModeClick('ai'));
+
+// Receive sync from parent (panel toggle → manifest)
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'datahub-mode') setManifestMode(e.data.mode);
+  if (e.data?.type === 'datahub-parallax') {
+    gsap.to(fade, { duration: 0.5, ease: 'power2.inOut', parallax: e.data.on ? 1 : 0 });
+  }
+});
+
+setManifestMode('human'); // default visual
+
+// When embedded as a background (in an iframe), hide this manifest —
+// the parent page renders its own clickable view-mode nav instead.
+if (window.self !== window.top) {
+  var _mf = document.getElementById('manifest');
+  if (_mf) _mf.style.display = 'none';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "skill_name": "url-to-dataset-record",
+  "evals": [
+    {
+      "id": 0,
+      "name": "arxiv-mamba",
+      "prompt": "hey can you add this paper to the datahub registry? https://arxiv.org/abs/2312.00752\n\nSave the resulting record JSON to <OUTPUT_DIR>/record.json so I can review it. Don't actually try to open a PR — the repo isn't set up yet, just produce the record and tell me what would happen next.",
+      "expected_output": "A single JSON record matching the dataland long-key schema for the Mamba paper. Should have task ~ 'Sequence Modeling' (or similar reasonable choice), ai_system likely 'model' (state-space model), architecture mentioning 'State Space', organization 'Carnegie Mellon University' or 'Princeton' (the authors' affiliations), year 2023, source_url 'https://arxiv.org/abs/2312.00752', description that's 2-3 sentences in the registry's terse factual tone. id should be 16 (next after the existing 15).",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "github-clip",
+      "prompt": "Log this GitHub repo into the dataset registry: https://github.com/openai/CLIP\n\nSave the record to <OUTPUT_DIR>/record.json. Don't open a PR — just produce the JSON.",
+      "expected_output": "A JSON record for CLIP. task ~ 'Image-Text Retrieval' or 'Multimodal' or similar. ai_system 'model'. architecture 'Vision-Language' or 'Contrastive Vision-Language'. organization 'OpenAI'. license should reflect the repo's actual license (MIT). source_url 'https://github.com/openai/CLIP'. id 16.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "hf-phi2",
+      "prompt": "Register this model in the datahub: https://huggingface.co/microsoft/phi-2\n\nSave to <OUTPUT_DIR>/record.json.",
+      "expected_output": "A JSON record for Microsoft's Phi-2. task likely 'Code Generation' or 'Language Modeling' or general LLM task. ai_system 'model' or 'agent' (defensible either way; Phi-2 is a base LLM). organization 'Microsoft'. params should be '2.7B'. source_url 'https://huggingface.co/microsoft/phi-2'. id 16.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": 16,
+  "task": "Language Modeling",
+  "model": "Mamba",
+  "ai_system": "model",
+  "architecture": "Selective State Space Model",
+  "domain": "NLP",
+  "language": "Python",
+  "source_url": "https://arxiv.org/abs/2312.00752",
+  "organization": "Carnegie Mellon University",
+  "params": "3B",
+  "year": 2023,
+  "license": "Apache 2.0",
+  "description": "Linear-time sequence modeling backbone built on selective state space layers whose parameters are functions of the input, enabling content-based reasoning without attention or MLP blocks. A hardware-aware parallel recurrent algorithm delivers 5x higher inference throughput than Transformers and linear scaling to million-length sequences. Mamba-3B matches Transformers twice its size on language modeling and reaches state-of-the-art across language, audio, and genomics."
+}

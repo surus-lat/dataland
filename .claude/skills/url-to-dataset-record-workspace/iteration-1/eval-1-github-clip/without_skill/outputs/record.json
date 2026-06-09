@@ -1,0 +1,15 @@
+{
+  "id": 16,
+  "task": "Zero-shot Image Classification",
+  "model": "CLIP",
+  "ai_system": "model",
+  "architecture": "Vision-Language (Dual Encoder)",
+  "domain": "Multimodal",
+  "language": "Python",
+  "source_url": "https://github.com/openai/CLIP",
+  "organization": "OpenAI",
+  "params": "428M",
+  "year": 2021,
+  "license": "MIT",
+  "description": "Contrastive Language-Image Pre-training learns visual concepts from 400M natural language supervision pairs. A joint image-text embedding space enables zero-shot transfer to arbitrary classification tasks without task-specific training."
+}

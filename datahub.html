@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dataset Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&family=Cinzel:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; background: #040c0a; }
+
+    #bg-frame {
+      position: fixed; inset: 0; z-index: 0;
+      width: 100%; height: 100%;
+      border: none; pointer-events: none;
+      transition: filter 0.35s ease;
+    }
+    #root {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    #root.page-visible > * { pointer-events: all; }
+    #scroll-hint { transition: opacity 0.4s ease, transform 0.4s ease; }
+
+    /* ─ Scroll pages ─ */
+    #scroll-container { height: 200vh; position: relative; z-index: 2; pointer-events: none; }
+    #page-1 { height: 100vh; }
+    #page-2 { height: 100vh; }
+
+    /* ─ Scroll hint ─ */
+    #scroll-hint {
+      position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+      z-index: 25; display: flex; flex-direction: column; align-items: center; gap: 7px;
+      pointer-events: none;
+    }
+    #scroll-hint .sh-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
+      color: rgba(255,255,255,0.22);
+    }
+    #scroll-hint .sh-arrow {
+      color: rgba(255,255,255,0.18); font-size: 13px;
+      animation: bounceDown 2.4s ease-in-out infinite;
+    }
+    @keyframes bounceDown {
+      0%,100% { transform: translateY(0); }
+      55%      { transform: translateY(6px); }
+    }
+
+    /* ── Parent view-mode manifest (clickable nav) ── */
+    #nav-manifest {
+      position: fixed; top: 118px; right: 56px;
+      z-index: 30; pointer-events: auto;
+    }
+    .nm-header {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.30); text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .nm-rule { height: 1px; background: rgba(255,255,255,0.10); margin-bottom: 13px; }
+    .nm-row {
+      display: flex; align-items: center; gap: 11px;
+      margin-bottom: 8px; padding: 3px 6px; border-radius: 4px;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .nm-row:not(.nm-active) { opacity: 0.55; }
+    .nm-row:not(.nm-active):hover { opacity: 0.9; }
+    .nm-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.70); flex-shrink: 0;
+      transition: background 0.4s ease, transform 0.4s ease;
+    }
+    .nm-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.64);
+      transition: color 0.4s ease;
+    }
+    .nm-row.nm-active .nm-dot {
+      background: rgba(172,238,192,0.92);
+      animation: nmGlow 2.4s ease-in-out infinite;
+    }
+    .nm-row.nm-active .nm-name { color: rgba(192,244,208,0.88); }
+    @keyframes nmGlow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(172,238,192,0); }
+      50%      { box-shadow: 0 0 0 5px rgba(172,238,192,0.15); }
+    }
+    @media (max-width: 768px) {
+      #nav-manifest { top: 64px; right: 24px; }
+    }
+
+    /* ── Hero (top page) — DatahubHero renders inside ── */
+    #hero {
+      position: fixed; inset: 0; z-index: 5;
+      pointer-events: auto;
+      transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+    /* hide page scrollbar */
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; }
+    body { scrollbar-width: none; -ms-overflow-style: none; }
+    body::-webkit-scrollbar { display: none; }
+    /* keep inner scrollbars subtle */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 4px; }
+
+    @keyframes cur-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    @keyframes heroCtrlIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes dotPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(172,238,192,0); }
+      50%      { box-shadow: 0 0 0 5px rgba(172,238,192,0.15); }
+    }
+    @keyframes panelFloat {
+      0%,100% { transform: translateY(0px); }
+      50%      { transform: translateY(-5px); }
+    }
+    @keyframes slideRight {
+      from { opacity: 0; transform: translateX(18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes termBlink {
+      0%,100% { opacity: 1; } 50% { opacity: 0; }
+    }
+    @keyframes scifiSweep {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    /* Terminal scanlines */
+    .scanlines::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 100;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px
+      );
+      pointer-events: none; border-radius: inherit;
+    }
+
+    /* Sci-fi corner marks */
+    .hud-corners::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 100;
+      pointer-events: none;
+      background:
+        linear-gradient(to right,  #00d4ff 20px, transparent 20px) 0 0 / 100% 2px no-repeat,
+        linear-gradient(to bottom, #00d4ff 20px, transparent 20px) 0 0 / 2px 100% no-repeat,
+        linear-gradient(to left,   #00d4ff 20px, transparent 20px) 100% 100% / 100% 2px no-repeat,
+        linear-gradient(to top,    #00d4ff 20px, transparent 20px) 100% 100% / 2px 100% no-repeat;
+      opacity: 0.55;
+    }
+  </style>
+<link id="gfont-Playfair-Display" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&amp;display=swap">
+<link id="gfont-Permanent-Marker" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker:wght@300;400;500;600;700&amp;display=swap">
+<link id="gfont-Poppins" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap">
+</head>
+<body>
+  <iframe id="bg-frame" src="Living Layers.html"></iframe>
+
+  <!-- ── Hero (top page of the human view) — DatahubHero renders here ── -->
+  <div id="hero"></div>
+
+  <div id="scroll-container">
+    <div id="page-1"></div>
+    <div id="page-2"></div>
+  </div>
+
+  <div id="scroll-hint">
+    <div class="sh-arrow">↓</div>
+  </div>
+
+  <!-- Parent-level clickable view-mode manifest -->
+  <div id="nav-manifest">
+    <div class="nm-row nm-active" data-mode="human">
+      <div class="nm-dot"></div><span class="nm-name">human</span>
+    </div>
+    <div class="nm-row" data-mode="ai">
+      <div class="nm-dot"></div><span class="nm-name">ai</span>
+    </div>
+  </div>
+
+  <div id="root"></div>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel">
+    const { useState, useMemo, useEffect, useRef } = React;
+
+    /* ─── Data ─────────────────────────────────────────────────────── */
+    /* Source of truth lives in /data.json — fetched once inside <App />. */
+
+    /* ─── Themes ────────────────────────────────────────────────────── */
+    const T = {
+      glass: {
+        id: 'glass',
+        panelBg:      (op) => `rgba(4,13,8,${op})`,
+        border:       'rgba(255,255,255,0.09)',
+        backdrop:     'blur(22px) saturate(1.5)',
+        headerBg:     'rgba(255,255,255,0.025)',
+        divider:      'rgba(255,255,255,0.07)',
+        rowHover:     'rgba(255,255,255,0.04)',
+        rowActive:    'rgba(172,238,192,0.07)',
+        rowBorder:    '#aceeC0',
+        text:         'rgba(255,255,255,0.88)',
+        textSub:      'rgba(255,255,255,0.42)',
+        textMono:     'rgba(255,255,255,0.55)',
+        accent:       '#aceeC0',
+        accentDim:    'rgba(172,238,192,0.55)',
+        inputBg:      'rgba(255,255,255,0.05)',
+        inputBorder:  'rgba(255,255,255,0.10)',
+        tagBg:        'rgba(172,238,192,0.10)',
+        tagColor:     'rgba(172,238,192,0.85)',
+        drawerBg:     'rgba(3,10,5,0.90)',
+        font:         "'Inter', sans-serif",
+        mono:         "'JetBrains Mono', monospace",
+        radius:       '14px',
+        rowRadius:    '0px',
+        shadow:       '0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06)',
+        glowRgb:      '172,238,192',
+        floatAnim:    'panelFloat 7s ease-in-out infinite',
+        scanlines:    false,
+        hud:          false,
+      },
+      terminal: {
+        id: 'terminal',
+        panelBg:      (op) => `rgba(0,0,0,${op})`,
+        border:       'rgba(0,255,65,0.38)',
+        backdrop:     'none',
+        headerBg:     'rgba(0,255,65,0.04)',
+        divider:      'rgba(0,255,65,0.10)',
+        rowHover:     'rgba(0,255,65,0.06)',
+        rowActive:    'rgba(0,255,65,0.10)',
+        rowBorder:    '#00ff41',
+        text:         '#00ff41',
+        textSub:      'rgba(0,255,65,0.38)',
+        textMono:     'rgba(0,255,65,0.72)',
+        accent:       '#00ff41',
+        accentDim:    'rgba(0,255,65,0.55)',
+        inputBg:      'rgba(0,0,0,0.6)',
+        inputBorder:  'rgba(0,255,65,0.32)',
+        tagBg:        'rgba(0,255,65,0.08)',
+        tagColor:     'rgba(0,255,65,0.85)',
+        drawerBg:     'rgba(0,3,0,0.98)',
+        font:         "'JetBrains Mono', monospace",
+        mono:         "'JetBrains Mono', monospace",
+        radius:       '2px',
+        rowRadius:    '0px',
+        shadow:       '0 0 0 1px rgba(0,255,65,0.35), 0 0 80px rgba(0,255,65,0.06), 0 40px 80px rgba(0,0,0,0.8)',
+        glowRgb:      '0,255,65',
+        floatAnim:    'none',
+        scanlines:    true,
+        hud:          false,
+      },
+      scifi: {
+        id: 'scifi',
+        panelBg:      (op) => `rgba(2,8,24,${op})`,
+        border:       'rgba(0,212,255,0.28)',
+        backdrop:     'blur(20px) saturate(1.6)',
+        headerBg:     'rgba(0,212,255,0.04)',
+        divider:      'rgba(0,212,255,0.09)',
+        rowHover:     'rgba(0,212,255,0.04)',
+        rowActive:    'rgba(0,212,255,0.09)',
+        rowBorder:    '#00d4ff',
+        text:         'rgba(200,235,255,0.90)',
+        textSub:      'rgba(0,212,255,0.42)',
+        textMono:     'rgba(0,212,255,0.68)',
+        accent:       '#00d4ff',
+        accentDim:    'rgba(0,212,255,0.55)',
+        inputBg:      'rgba(0,212,255,0.04)',
+        inputBorder:  'rgba(0,212,255,0.22)',
+        tagBg:        'rgba(0,212,255,0.10)',
+        tagColor:     '#00d4ff',
+        drawerBg:     'rgba(2,8,24,0.98)',
+        font:         "'Inter', sans-serif",
+        mono:         "'JetBrains Mono', monospace",
+        radius:       '4px',
+        rowRadius:    '0px',
+        shadow:       '0 0 0 1px rgba(0,212,255,0.22), 0 40px 100px rgba(0,0,0,0.75), 0 0 160px rgba(0,212,255,0.04)',
+        glowRgb:      '0,212,255',
+        floatAnim:    'panelFloat 8s ease-in-out infinite',
+        scanlines:    false,
+        hud:          true,
+      },
+      clean: {
+        id: 'clean',
+        panelBg:      (op) => `rgba(250,250,248,${op})`,
+        border:       'rgba(0,0,0,0.07)',
+        backdrop:     'blur(24px) saturate(1.3)',
+        headerBg:     'rgba(0,0,0,0.02)',
+        divider:      'rgba(0,0,0,0.07)',
+        rowHover:     'rgba(0,0,0,0.03)',
+        rowActive:    'rgba(42,111,219,0.06)',
+        rowBorder:    '#2a6fdb',
+        text:         'rgba(14,14,14,0.88)',
+        textSub:      'rgba(0,0,0,0.32)',
+        textMono:     'rgba(0,0,0,0.52)',
+        accent:       '#2a6fdb',
+        accentDim:    'rgba(42,111,219,0.52)',
+        inputBg:      'rgba(0,0,0,0.04)',
+        inputBorder:  'rgba(0,0,0,0.10)',
+        tagBg:        'rgba(42,111,219,0.08)',
+        tagColor:     '#2a6fdb',
+        drawerBg:     'rgba(246,246,244,0.98)',
+        font:         "'Inter', sans-serif",
+        mono:         "'JetBrains Mono', monospace",
+        radius:       '12px',
+        rowRadius:    '0px',
+        shadow:       '0 24px 70px rgba(0,0,0,0.28), 0 0 0 1px rgba(0,0,0,0.06)',
+        glowRgb:      '42,111,219',
+        floatAnim:    'panelFloat 7s ease-in-out infinite',
+        scanlines:    false,
+        hud:          false,
+      },
+    };
+
+    /* ─── Org Carousel ───────────────────────────────────────────────── */
+    function OrgCarousel({ th, records }) {
+      const orgs = [...new Set(records.map(r => r.organization))];
+      const items = [...orgs, ...orgs, ...orgs];
+      return (
+        <div style={{ borderBottom: `1px solid ${th.divider}`, overflow: 'hidden', flexShrink: 0, padding: '9px 0', position: 'relative' }}>
+          <div style={{ display: 'flex', gap: '0', animation: 'orgScroll 22s linear infinite', width: 'max-content' }}>
+            {items.map((org, i) => (
+              <span key={i} style={{ fontFamily: th.mono, fontSize: '9px', color: th.textSub, letterSpacing: '0.22em', textTransform: 'uppercase', whiteSpace: 'nowrap', padding: '0 18px' }}>
+                {org}<span style={{ color: th.accent, marginLeft: '18px', opacity: 0.35 }}>·</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ─── Signal View (pure machine-readable JSON) ───────────────────────── */
+    function SignalView({ data }) {
+      const th = T.glass;
+      if (!data) return null;
+      // data.json is already the canonical ontology-first shape.
+      const payload = data;
+
+      const hl = (json) => json
+        .replace(/("(?:[^"\\]|\\.)*")(s*:)/g, '<span class="jk">$1</span>$2')
+        .replace(/:s*("(?:[^"\\]|\\.)*")/g, ': <span class="js">$1</span>')
+        .replace(/:s*(-?d+(?:.d+)?)/g, ': <span class="jn">$1</span>')
+        .replace(/(true|false|null)/g, '<span class="jb">$1</span>');
+
+      const raw = JSON.stringify(payload, null, 2);
+      return (
+        <div style={{
+          width: 'min(880px, 94vw)', height: 'min(820px, 92vh)',
+          background: 'rgba(2,8,5,0.74)',
+          backdropFilter: 'blur(22px) saturate(1.4)', WebkitBackdropFilter: 'blur(22px) saturate(1.4)',
+          border: '1px solid rgba(172,238,192,0.16)',
+          borderRadius: '6px',
+          boxShadow: '0 50px 130px rgba(0,0,0,0.65), 0 0 90px rgba(172,238,192,0.05)',
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          animation: 'signalIn 0.5s cubic-bezier(0.16,1,0.3,1) both',
+        }}>
+          {/* header */}
+          <div style={{
+            padding: '15px 24px', flexShrink: 0,
+            borderBottom: '1px solid rgba(172,238,192,0.12)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            background: 'rgba(172,238,192,0.025)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#aceeC0', boxShadow: '0 0 8px #aceeC0', animation: 'dotPulse 3.2s ease-in-out infinite' }} />
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.26em', color: 'rgba(172,238,192,0.62)', textTransform: 'uppercase' }}>signal · machine-readable</span>
+            </div>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.28)' }}>application/json · {payload.records.length} records</span>
+          </div>
+          {/* org ticker */}
+          <OrgCarousel th={th} records={payload.records} />
+          {/* json body */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '22px 26px' }}>
+            <pre style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10.5px', lineHeight: 1.75, color: 'rgba(255,255,255,0.55)', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: hl(raw) }} />
+          </div>
+        </div>
+      );
+    }
+
+    /* ─── Tweak defaults ────────────────────────────────────────────── */
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "vibe": "glass",
+      "opacity": 86,
+      "floatSpeed": 1,
+      "float": false,
+      "glow": 100,
+      "pulse": 1,
+      "rowAnimate": true,
+      "scrollThreshold": 20,
+      "fadeDuration": 500,
+      "snapDelay": 80,
+      "brightness": 90,
+      "parallax": true
+    }/*EDITMODE-END*/;
+
+    /* ─── Tag chip ──────────────────────────────────────────────────── */
+    function Chip({ label, th }) {
+      return (
+        <span style={{
+          display: 'inline-block', padding: '2px 7px',
+          borderRadius: th.radius === '14px' ? '20px' : th.radius,
+          background: th.tagBg, color: th.tagColor,
+          fontSize: '10px', fontFamily: th.mono,
+          letterSpacing: '0.04em', whiteSpace: 'nowrap',
+        }}>{label}</span>
+      );
+    }
+
+    /* ─── Search bar ────────────────────────────────────────────────── */
+    function SearchBar({ query, setQuery, count, th }) {
+      const isTerm = th.id === 'terminal';
+      return (
+        <div style={{ padding: '10px 18px', borderBottom: `1px solid ${th.divider}`, position: 'relative', flexShrink: 0 }}>
+          {isTerm ? (
+            <span style={{
+              position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)',
+              color: th.accent, fontFamily: th.mono, fontSize: '12px', opacity: 0.65,
+              userSelect: 'none', pointerEvents: 'none',
+            }}>$ grep&nbsp;</span>
+          ) : (
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"
+                 style={{ position: 'absolute', left: '28px', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }}>
+              <circle cx="6" cy="6" r="4.5" stroke={th.text} strokeWidth="1.5"/>
+              <path d="M9.5 9.5L12 12" stroke={th.text} strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          )}
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={isTerm ? 'pattern…' : 'Search task, model, architecture, domain…'}
+            style={{
+              width: '100%', background: th.inputBg,
+              border: `1px solid ${th.inputBorder}`,
+              borderRadius: th.radius === '14px' ? '8px' : th.radius,
+              color: th.text, fontSize: '12.5px',
+              fontFamily: isTerm ? th.mono : th.font,
+              padding: isTerm ? '8px 80px 8px 66px' : '8px 70px 8px 34px',
+              outline: 'none', caretColor: th.accent,
+              letterSpacing: isTerm ? '0.04em' : 'normal',
+              transition: 'border-color 0.15s',
+            }}
+            onFocus={e => e.target.style.borderColor = th.accent}
+            onBlur={e => e.target.style.borderColor = th.inputBorder}
+          />
+          <span style={{
+            position: 'absolute', right: '28px', top: '50%', transform: 'translateY(-50%)',
+            color: th.textSub, fontSize: '9px', fontFamily: th.mono, letterSpacing: '0.14em',
+            userSelect: 'none',
+          }}>{count}&nbsp;REC</span>
+        </div>
+      );
+    }
+
+    /* ─── Column headers ────────────────────────────────────────────── */
+    const COLS = [
+      { label: 'Task',         flex: '1.1fr' },
+      { label: 'Model',        flex: '1.0fr' },
+      { label: 'Architecture', flex: '1.2fr' },
+      { label: 'Domain',       flex: '0.7fr' },
+      { label: 'AI System',    flex: '0.7fr' },
+      { label: 'Org',          flex: '0.8fr' },
+      { label: 'Lang',         flex: '0.45fr' },
+    ];
+
+    function ColHeaders({ th }) {
+      return (
+        <div style={{
+          display: 'grid', gridTemplateColumns: COLS.map(c => c.flex).join(' '),
+          gap: '0 14px', padding: '0 18px',
+          borderBottom: `1px solid ${th.divider}`,
+          background: th.headerBg, flexShrink: 0,
+        }}>
+          {COLS.map(c => (
+            <span key={c.label} style={{
+              fontSize: '9px', fontFamily: th.mono, color: th.textSub,
+              letterSpacing: '0.20em', textTransform: 'uppercase',
+              padding: '8px 0', userSelect: 'none',
+            }}>{c.label}</span>
+          ))}
+        </div>
+      );
+    }
+
+    /* ─── Data row ──────────────────────────────────────────────────── */
+    function DataRow({ item, isSelected, onClick, th, animate }) {
+      const [hov, setHov] = useState(false);
+      const isTerm = th.id === 'terminal';
+      return (
+        <div
+          onClick={onClick}
+          onMouseEnter={() => setHov(true)}
+          onMouseLeave={() => setHov(false)}
+          style={{
+            display: 'grid', gridTemplateColumns: COLS.map(c => c.flex).join(' '),
+            gap: '0 14px', padding: '10px 18px',
+            borderBottom: `1px solid ${th.divider}`,
+            borderLeft: isSelected ? `2px solid ${th.rowBorder}` : '2px solid transparent',
+            background: isSelected ? th.rowActive : (hov ? th.rowHover : 'transparent'),
+            cursor: 'pointer', alignItems: 'center',
+            transition: 'background 0.1s, border-color 0.1s',
+            animation: animate ? 'rowFadeIn 0.18s ease both' : 'none',
+          }}
+        >
+          <span style={{
+            fontSize: '13px', fontFamily: th.font,
+            color: isSelected ? th.accent : th.text,
+            fontWeight: isSelected ? '500' : '400',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {isTerm && isSelected ? '▶ ' : ''}{item.task}
+          </span>
+          <span style={{
+            fontSize: '11.5px', fontFamily: th.mono,
+            color: th.textMono,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>{item.model}</span>
+          <span style={{
+            fontSize: '11px', fontFamily: th.mono, color: th.textSub,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>{item.architecture}</span>
+          <Chip label={item.domain} th={th} />
+          <Chip label={item.ai_system} th={th} />
+          <span style={{ fontSize: '10px', fontFamily: th.mono, color: th.textSub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.organization}</span>
+          <span style={{ fontSize: '11px', fontFamily: th.mono, color: th.textSub }}>{item.language}</span>
+        </div>
+      );
+    }
+
+    /* ─── Detail drawer ─────────────────────────────────────────────── */
+    function DetailDrawer({ item, th, onClose }) {
+      const isTerm = th.id === 'terminal';
+      const isScifi = th.id === 'scifi';
+
+      const Field = ({ label, value, mono, full }) => (
+        <div style={{ marginBottom: '14px', gridColumn: full ? '1 / -1' : undefined }}>
+          <div style={{
+            fontSize: '9px', fontFamily: th.mono, color: th.accentDim,
+            letterSpacing: '0.20em', textTransform: 'uppercase', marginBottom: '4px',
+          }}>{isTerm ? `// ${label}` : label}</div>
+          <div style={{
+            fontSize: mono ? '11.5px' : '12.5px',
+            fontFamily: mono ? th.mono : th.font,
+            color: mono ? th.textMono : th.text,
+            lineHeight: 1.55, wordBreak: 'break-word',
+          }}>{value}</div>
+        </div>
+      );
+
+      return (
+        <div style={{
+          flex: '0 0 42%', background: th.drawerBg,
+          borderLeft: `1px solid ${th.divider}`,
+          display: 'flex', flexDirection: 'column',
+          animation: 'slideRight 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
+          overflow: 'hidden', position: 'relative', minWidth: 0,
+        }}>
+          {/* Drawer header */}
+          <div style={{
+            padding: '14px 18px', flexShrink: 0,
+            borderBottom: `1px solid ${th.divider}`,
+            background: th.headerBg,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+          }}>
+            <div>
+              <div style={{
+                fontSize: '9px', fontFamily: th.mono, color: th.accentDim,
+                letterSpacing: '0.20em', textTransform: 'uppercase', marginBottom: '5px',
+              }}>{isScifi ? '◈ ENTRY DETAIL' : isTerm ? '[ RECORD ]' : 'Entry Detail'}</div>
+              <div style={{
+                fontSize: '14px', fontFamily: th.font,
+                color: th.text, fontWeight: '500', lineHeight: 1.25,
+              }}>{item.task}</div>
+              <div style={{
+                fontSize: '11px', fontFamily: th.mono,
+                color: th.accentDim, marginTop: '3px',
+              }}>{item.organization} · {item.year}</div>
+            </div>
+            <button onClick={onClose} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: th.textSub, fontSize: '18px', lineHeight: 1,
+              fontFamily: th.mono, padding: '0 0 0 8px',
+              transition: 'color 0.12s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = th.accent}
+            onMouseLeave={e => e.currentTarget.style.color = th.textSub}
+            >×</button>
+          </div>
+
+          {/* Drawer body */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '18px' }}>
+            <Field label="Description" value={item.description} full />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 14px' }}>
+              <Field label="Model"        value={item.model}        mono />
+              <Field label="Parameters"   value={item.params}       mono />
+              <Field label="Architecture" value={item.architecture} mono />
+              <Field label="License"      value={item.license}      mono />
+              <Field label="Domain"       value={item.domain} />
+              <Field label="AI System"    value={item.ai_system} />
+              <Field label="Language"     value={item.language} />
+            </div>
+
+            <div style={{ marginTop: '4px' }}>
+              <div style={{
+                fontSize: '9px', fontFamily: th.mono, color: th.accentDim,
+                letterSpacing: '0.20em', textTransform: 'uppercase', marginBottom: '5px',
+              }}>{isTerm ? '// SOURCE URL' : 'Source URL'}</div>
+              <a href={item.source_url} target="_blank" rel="noopener noreferrer" style={{
+                fontSize: '10.5px', fontFamily: th.mono, color: th.accent,
+                textDecoration: 'none', wordBreak: 'break-all', lineHeight: 1.6,
+                display: 'block',
+              }}
+              onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+              onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+              >{item.source_url}</a>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ─── App ───────────────────────────────────────────────────────── */
+    function App() {
+      const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+      const th = T[t.vibe] || T.glass;
+      const [query, setQuery]     = useState('');
+      const [selected, setSelected] = useState(null);
+      const [viewMode, setViewMode] = useState('human'); // 'human' | 'ai'
+      const [data, setData] = useState(null);
+
+      // ── load the JSON "db" ──
+      useEffect(() => {
+        fetch('data.json')
+          .then(r => r.json())
+          .then(setData)
+          .catch(err => console.error('Failed to load data.json:', err));
+      }, []);
+
+      const records = data ? data.records : [];
+
+      // ── receive mode from bg-frame manifest ──
+      useEffect(() => {
+        const h = (e) => { if (e.detail) setViewMode(e.detail); };
+        window.addEventListener('datahub-mode-change', h);
+        return () => window.removeEventListener('datahub-mode-change', h);
+      }, []);
+
+      // ── sync mode → bg-frame manifest visual ──
+      useEffect(() => {
+        const frame = document.getElementById('bg-frame');
+        frame && frame.contentWindow && frame.contentWindow.postMessage({ type: 'datahub-mode', mode: viewMode }, '*');
+      }, [viewMode]);
+
+      // ── sync scroll-feel tweaks → global script ──
+      useEffect(() => {
+        window.__scrollThreshold = (t.scrollThreshold ?? 20) / 100;
+        window.__snapDelay = t.snapDelay ?? 130;
+        const dur = t.fadeDuration ?? 500;
+        const rEl = document.getElementById('root');
+        if (rEl) rEl.style.transition = `opacity ${dur}ms cubic-bezier(0.4,0,0.2,1), transform ${dur}ms cubic-bezier(0.4,0,0.2,1)`;
+      }, [t.scrollThreshold, t.fadeDuration, t.snapDelay]);
+
+      // ── master brightness of the whole non-text visual layer ──
+      useEffect(() => {
+        const b = (t.brightness ?? 100) / 100;
+        const frame = document.getElementById('bg-frame');
+        if (frame) frame.style.filter = `brightness(${b})`;
+      }, [t.brightness]);
+
+      // ── parallax on/off → bg-frame ──
+      useEffect(() => {
+        const frame = document.getElementById('bg-frame');
+        const send = () => frame && frame.contentWindow &&
+          frame.contentWindow.postMessage({ type: 'datahub-parallax', on: t.parallax !== false }, '*');
+        send();
+        // re-send shortly after in case the iframe just (re)loaded
+        const id = setTimeout(send, 400);
+        return () => clearTimeout(id);
+      }, [t.parallax]);
+
+      const filtered = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return records;
+        return records.filter(r =>
+          r.task.toLowerCase().includes(q) ||
+          r.model.toLowerCase().includes(q) ||
+          r.architecture.toLowerCase().includes(q) ||
+          r.domain.toLowerCase().includes(q) ||
+          r.language.toLowerCase().includes(q) ||
+          r.ai_system.toLowerCase().includes(q) ||
+          r.organization.toLowerCase().includes(q)
+        );
+      }, [query, records]);
+
+      useEffect(() => {
+        if (selected && !filtered.find(d => d.id === selected.id)) setSelected(null);
+      }, [filtered]);
+
+      const tableScrollRef = useRef(null);
+      useEffect(() => {
+        const el = tableScrollRef.current;
+        if (!el) return;
+        const onWheel = (e) => {
+          if (e.shiftKey) { e.preventDefault(); el.scrollLeft += e.deltaY * 0.8; }
+        };
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+      }, []);
+
+      const op = (t.opacity / 100).toFixed(2);
+      const isTerm  = th.id === 'terminal';
+      const isScifi = th.id === 'scifi';
+
+      // ── Aliveness ──
+      const floatAnim  = t.float ? `panelFloat ${(15 - t.floatSpeed * 1.2).toFixed(1)}s ease-in-out infinite` : 'none';
+      const glowShadow = t.glow > 0 ? `, 0 0 ${Math.round(t.glow * 2)}px rgba(${th.glowRgb},${(t.glow / 100 * 0.45).toFixed(2)})` : '';
+      const finalShadow = th.shadow + glowShadow;
+      const pulseDur   = `${(5.5 - t.pulse * 0.45).toFixed(1)}s`;
+
+      return (
+        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {viewMode === 'ai' ? (
+          <SignalView data={data} />
+          ) : (
+          <div
+            className={`${isTerm ? 'scanlines' : ''} ${isScifi ? 'hud-corners' : ''}`}
+            style={{
+              width: 'min(960px, 93vw)', height: 'min(640px, 88vh)',
+              background: th.panelBg(op),
+              backdropFilter: th.backdrop, WebkitBackdropFilter: th.backdrop,
+              border: `1px solid ${th.border}`,
+              borderRadius: th.radius,
+              boxShadow: finalShadow,
+              animation: floatAnim,
+              display: 'flex', flexDirection: 'column',
+              overflow: 'hidden', position: 'relative',
+            }}
+          >
+            {/* ── Panel header ── */}
+            <div style={{
+              padding: '13px 18px', flexShrink: 0,
+              borderBottom: `1px solid ${th.divider}`,
+              background: th.headerBg,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {!isTerm && (
+                  <div style={{
+                    width: '7px', height: '7px', borderRadius: '50%',
+                    background: th.accent,
+                    boxShadow: `0 0 8px ${th.accent}`,
+                    animation: `dotPulse ${pulseDur} ease-in-out infinite`,
+                    flexShrink: 0,
+                  }} />
+                )}
+                <span style={{
+                  fontSize: '10px', fontFamily: th.mono,
+                  color: isTerm ? th.accent : th.textSub,
+                  letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: '500',
+                }}>
+                  {isTerm ? '[ DATASET EXPLORER v1.0 ]' : isScifi ? '◈ DATASET EXPLORER' : 'DATASET EXPLORER'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <button
+                  onClick={() => setTweak(t.opacity >= 80 ? { opacity: 46, glow: 0 } : { opacity: 86, glow: 100 })}
+                  style={{
+                    background: 'none', border: 'none',
+                    fontFamily: th.mono, fontSize: '9px',
+                    letterSpacing: '0.14em', padding: '3px 0', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                  }}
+                >
+                  <span style={{ color: t.opacity >= 80 ? th.accent : th.textSub, fontWeight: t.opacity >= 80 ? '500' : '400', transition: 'color 0.15s' }}>dark</span>
+                  <span style={{ color: th.textSub, opacity: 0.3 }}>/</span>
+                  <span style={{ color: t.opacity < 80 ? th.accent : th.textSub, fontWeight: t.opacity < 80 ? '500' : '400', transition: 'color 0.15s' }}>light</span>
+                </button>
+                <span style={{
+                  fontSize: '9px', fontFamily: th.mono,
+                  color: th.textSub, letterSpacing: '0.14em',
+                }}>
+                  {isTerm ? `${records.length}_TOTAL` : `${records.length} records`}
+                </span>
+              </div>
+            </div>
+
+            {/* ── Search ── */}
+            <SearchBar query={query} setQuery={setQuery} count={filtered.length} th={th} />
+
+            {/* ── Body ── */}
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+              {/* Table section */}
+              <div style={{
+                display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                flex: selected ? '0 0 58%' : '1 1 100%',
+                transition: 'flex 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
+                minWidth: 0,
+              }}>
+                {/* Horizontal scroll wrapper */}
+                <div
+                  ref={tableScrollRef}
+                  style={{
+                    flex: 1, display: 'flex', flexDirection: 'column',
+                    overflowX: 'auto', overflowY: 'hidden', minHeight: 0,
+                  }}
+                >
+                <div style={{ minWidth: '700px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <ColHeaders th={th} />
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  {filtered.length === 0 ? (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      height: '100%', color: th.textSub,
+                      fontFamily: th.mono, fontSize: '11px', letterSpacing: '0.12em',
+                    }}>
+                      {isTerm ? 'NO_RESULTS_FOUND' : 'No results found'}
+                    </div>
+                  ) : filtered.map(item => (
+                    <DataRow
+                      key={t.rowAnimate ? `${item.id}-${query}` : item.id}
+                      item={item}
+                      isSelected={selected?.id === item.id}
+                      onClick={() => setSelected(s => s?.id === item.id ? null : item)}
+                      th={th}
+                      animate={t.rowAnimate}
+                    />
+                  ))}
+                </div>
+                </div>{/* /min-width */}
+                </div>{/* /h-scroll */}
+              </div>
+
+              {/* Detail drawer */}
+              {selected && (
+                <DetailDrawer item={selected} th={th} onClose={() => setSelected(null)} />
+              )}
+            </div>
+
+            {/* ── Footer ── */}
+            <div style={{
+              padding: '7px 18px', flexShrink: 0,
+              borderTop: `1px solid ${th.divider}`,
+              background: th.headerBg,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span style={{
+                fontSize: '9px', fontFamily: th.mono,
+                color: th.textSub, letterSpacing: '0.14em', textTransform: 'uppercase',
+              }}>
+                {isTerm
+                  ? (query ? `> grep "${query}" → ${filtered.length} match${filtered.length !== 1 ? 'es' : ''}` : '> ready_')
+                  : isScifi
+                  ? `SYS:ACTIVE · ${filtered.length}/${records.length} LOADED`
+                  : `Showing ${filtered.length} of ${records.length} entries`}
+              </span>
+              <span style={{
+                fontSize: '9px', fontFamily: th.mono,
+                color: th.accentDim, letterSpacing: '0.12em',
+              }}>
+                {selected ? (isTerm ? `REC_#${selected.id}_OPEN` : `#${selected.id} selected`) : ''}
+              </span>
+            </div>
+          </div>
+          )}
+
+          {/* ── Tweaks panel removed for production ── */}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+
+  <!-- DatahubHero — human-mode top-page hero -->
+  <script type="text/babel" src="hero.jsx"></script>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+    var root = document.getElementById('root');
+    var hint = document.getElementById('scroll-hint');
+    var hero = document.getElementById('hero');
+    window.__aiMode = false;
+    window.__scrollThreshold = 0.20;
+    window.__snapDelay = 80;
+    var __page = 0;
+
+    gsap.set(root, { opacity: 0, y: 30 });
+
+    // ── Parent manifest: click to navigate between human / ai ──
+    var navRows = document.querySelectorAll('#nav-manifest .nm-row');
+    function setActiveManifest(mode) {
+      navRows.forEach(function(r){ r.classList.toggle('nm-active', r.dataset.mode === mode); });
+    }
+    navRows.forEach(function(r){
+      r.addEventListener('click', function(){
+        var mode = r.dataset.mode;
+        setActiveManifest(mode);
+        window.dispatchEvent(new CustomEvent('datahub-mode-change', { detail: mode }));
+        navigateTo(mode);
+      });
+    });
+
+    var snapTimer, isSnapping = false;
+
+    function navigateTo(mode) {
+      var nowAi = (mode === 'ai');
+      window.__aiMode = nowAi;
+      if (nowAi) {
+        // Pure signal: full-screen, no page scroll, hero hidden
+        if (hero) { hero.style.opacity = 0; hero.style.pointerEvents = 'none'; }
+        document.documentElement.style.overflow = 'hidden';
+        root.style.opacity = 1;
+        root.style.transform = 'none';
+        root.classList.add('page-visible');
+        hint.style.opacity = 0;
+      } else {
+        // Human: return directly to the hero (top) page
+        document.documentElement.style.overflow = '';
+        isSnapping = true;
+        window.scrollTo({ top: 0 });   // instant reset to top
+        setPage(0);                    // panel → hidden, hero → shown (crossfades via CSS)
+        setTimeout(function(){ isSnapping = false; }, 700);
+      }
+    }
+
+    // Binary page state — panel is either hidden (page 0) or shown (page 1).
+    // The CSS transition on #root makes the flip feel like a smooth scroll,
+    // while the position itself snaps between the two pages.
+    function setPage(p) {
+      __page = p;
+      if (window.__aiMode) return;
+      if (p === 1) {
+        root.style.opacity = 1;
+        root.style.transform = 'translateY(0)';
+        root.classList.add('page-visible');
+        hint.style.opacity = 0;
+        hint.style.transform = 'translateX(-50%) translateY(-10px)';
+        if (hero) { hero.style.opacity = 0; hero.style.transform = 'translateY(-24px)'; hero.style.pointerEvents = 'none'; }
+      } else {
+        root.style.opacity = 0;
+        root.style.transform = 'translateY(30px)';
+        root.classList.remove('page-visible');
+        hint.style.opacity = 1;
+        hint.style.transform = 'translateX(-50%) translateY(0)';
+        if (hero) { hero.style.opacity = 1; hero.style.transform = 'translateY(0)'; hero.style.pointerEvents = 'auto'; }
+      }
+    }
+
+    ScrollTrigger.create({
+      trigger: '#scroll-container',
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: function(self) {
+        if (window.__aiMode) return;
+        setPage(self.progress >= (window.__scrollThreshold || 0.20) ? 1 : 0);
+      }
+    });
+
+    // Manual page-snap on scroll-end
+    window.addEventListener('scroll', function() {
+      if (window.__aiMode || isSnapping) return;
+      clearTimeout(snapTimer);
+      snapTimer = setTimeout(function() {
+        var target = __page === 1 ? window.innerHeight : 0;
+        if (Math.abs(window.scrollY - target) < 2) return;
+        isSnapping = true;
+        window.scrollTo({ top: target, behavior: 'smooth' });
+        setTimeout(function(){ isSnapping = false; }, 600);
+      }, window.__snapDelay || 130);
+    }, { passive: true });
+  </script>
+</body>
+</html>

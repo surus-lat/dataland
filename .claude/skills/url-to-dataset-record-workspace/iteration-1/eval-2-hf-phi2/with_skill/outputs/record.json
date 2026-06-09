@@ -1,0 +1,15 @@
+{
+  "id": 16,
+  "task": "Text Generation",
+  "model": "Phi-2",
+  "ai_system": "model",
+  "architecture": "Transformer (Decoder)",
+  "domain": "NLP",
+  "language": "Python",
+  "source_url": "https://huggingface.co/microsoft/phi-2",
+  "organization": "Microsoft",
+  "params": "2.7B",
+  "year": 2023,
+  "license": "MIT",
+  "description": "Small language model trained on a curated mix of NLP synthetic texts and filtered web data, building on the Phi-1.5 recipe. Achieves near state-of-the-art performance on common-sense, language understanding, and reasoning benchmarks among models under 13B parameters, without RLHF fine-tuning."
+}
