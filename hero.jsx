@@ -147,10 +147,17 @@
 
     const stats = useMemo(() => {
       if (!records) return null;
+      // The hero headline counts only "real" languages — concrete natural-language
+      // tags like es-AR / pt-BR / qu. "Multilingual" and "N/A" are bookkeeping
+      // values for multi-language and non-linguistic artifacts; they shouldn't
+      // inflate the count.
+      const realLangs = records
+        .map(r => r.language)
+        .filter(l => l && l !== 'N/A' && l !== 'Multilingual');
       return {
         datasets:     records.length,
         domains:      new Set(records.map(r => r.domain)).size,
-        languages:    new Set(records.map(r => r.language)).size,
+        languages:    new Set(realLangs).size,
         contributors: new Set(records.map(r => r.organization)).size,
       };
     }, [records]);
