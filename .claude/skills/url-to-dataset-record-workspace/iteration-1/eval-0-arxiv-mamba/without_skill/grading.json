@@ -1,0 +1,71 @@
+{
+  "expectations": [
+    {
+      "text": "record.json exists and parses as valid JSON",
+      "passed": true,
+      "evidence": "parsed 593 chars"
+    },
+    {
+      "text": "Output is a single object (not array, not nested)",
+      "passed": true,
+      "evidence": "top-level type: dict, has keys: ['ai_system', 'architecture', 'description', 'domain', 'id']..."
+    },
+    {
+      "text": "Contains all 13 long-key fields",
+      "passed": true,
+      "evidence": "all 13 present"
+    },
+    {
+      "text": "Contains no short-key aliases",
+      "passed": true,
+      "evidence": "none present"
+    },
+    {
+      "text": "id is the integer 16",
+      "passed": true,
+      "evidence": "id=16 type=int"
+    },
+    {
+      "text": "ai_system value is one of: model, workflow, agent",
+      "passed": true,
+      "evidence": "ai_system='model'"
+    },
+    {
+      "text": "year is an integer (not a quoted string)",
+      "passed": true,
+      "evidence": "year=2023 type=int"
+    },
+    {
+      "text": "source_url contains 'arxiv.org/abs/2312.00752'",
+      "passed": true,
+      "evidence": "source_url='https://arxiv.org/abs/2312.00752'"
+    },
+    {
+      "text": "model name contains 'Mamba' (case-insensitive)",
+      "passed": true,
+      "evidence": "model='Mamba-3B'"
+    },
+    {
+      "text": "language equals 'Python'",
+      "passed": true,
+      "evidence": "language='Python'"
+    },
+    {
+      "text": "year is 2023 or 2024",
+      "passed": true,
+      "evidence": "year=2023"
+    },
+    {
+      "text": "description length 80-600 chars",
+      "passed": true,
+      "evidence": "len=264"
+    }
+  ],
+  "summary": {
+    "passed": 12,
+    "failed": 0,
+    "total": 12,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {}
+}

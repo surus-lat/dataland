@@ -1,94 +1,144 @@
 ---
 name: url-to-dataset-record
-description: Use when the user pastes a URL (arxiv, GitHub, papers-with-code, Nature, HuggingFace, OpenReview, project page, etc.) and wants to add it to the dataland data.json registry. Fetches the URL, extracts metadata, infers missing fields (domain from abstract, ai_system as model/workflow/agent), builds a record in the long-key schema, and opens a pull request appending it to /Users/dobleefe/dataland/data.json. Triggers on phrases like "add this paper", "log this model", "register this dataset", "add this to the registry/datahub", "new record from <url>", or any time a research URL is dropped in the context of growing the registry. Strongly prefer using this skill — guessing fields by eye produces inconsistent records.
+description: Use when the user pastes a HuggingFace URL (model, dataset, or collection) — or any research URL — and wants to add it to the dataland data.json registry. Fetches the URL, extracts metadata, infers missing fields (task, domain, ai_system as model/workflow/agent/dataset), builds one or more records in the long-key schema, and opens a pull request appending them to /Users/dobleefe/dataland/data.json. HuggingFace is the primary supported source today (arxiv and GitHub also work). Triggers on phrases like "add this model", "log this dataset", "register this hf collection", "add this to the registry/datahub", "new record from <hf url>", or any time a HuggingFace URL is dropped in the context of growing the registry. Strongly prefer using this skill — guessing fields by eye produces inconsistent records.
 ---
 
 # URL → Dataset Record
 
-Build one canonical record from one source URL and open a PR appending it to the dataland registry.
+Build canonical records from a source URL and open a PR appending them to the dataland registry. The registry's source of truth is `/Users/dobleefe/dataland/data.json`.
 
-## When this skill applies
-
-The dataland project (`/Users/dobleefe/dataland`) is a registry of ML datasets, models, and research artifacts. Its source of truth is a single file: `data.json`. Every record has the same long-key shape — read `data.json` to see real examples; do not rely on memory for the schema.
-
-The user gives you a URL. You produce one record and open a PR.
+**Primary supported source: HuggingFace.** Models, datasets, and collections all have first-class extraction paths. Arxiv and GitHub also work but are secondary.
 
 ## Workflow
 
 ### 1. Identify the source type
 
-URL host tells you which extraction path is best. The deterministic paths are faster and more reliable than scraping HTML:
+The URL host + path tells you which extraction path to use. The deterministic paths (one script call → clean JSON) are always preferred over scraping HTML:
 
-| Host pattern | Best extractor |
-| --- | --- |
-| `arxiv.org/abs/...` or `arxiv.org/pdf/...` | `scripts/fetch_metadata.py arxiv <id>` — uses the arxiv API |
-| `github.com/<owner>/<repo>` | `scripts/fetch_metadata.py github <owner>/<repo>` — uses the GitHub REST API (no auth needed for public repos, lower rate limit) |
-| `huggingface.co/<owner>/<model>` | `scripts/fetch_metadata.py hf <owner>/<model>` — uses the HF API |
-| `paperswithcode.com/paper/<slug>` | WebFetch the page + extract |
-| `openreview.net/forum?id=...` | WebFetch + extract; check for an arxiv link in the page and use the arxiv API instead if present |
-| `nature.com/articles/...`, `science.org/...`, journal sites | WebFetch the page + extract |
-| anything else | WebFetch the page and extract from HTML |
+| URL pattern | Extractor | Notes |
+| --- | --- | --- |
+| `huggingface.co/datasets/<owner>/<name>` | `scripts/fetch_metadata.py hf-dataset <owner>/<name>` | **dataset** — see § 3a |
+| `huggingface.co/collections/<owner>/<slug>` | `scripts/fetch_metadata.py hf-collection <url>` | **collection** — expands to N records, see § 3b |
+| `huggingface.co/<owner>/<model>` | `scripts/fetch_metadata.py hf <owner>/<model>` | model |
+| `arxiv.org/abs/...` or `arxiv.org/pdf/...` | `scripts/fetch_metadata.py arxiv <id>` | paper |
+| `github.com/<owner>/<repo>` | `scripts/fetch_metadata.py github <owner>/<repo>` | repo |
+| anything else (PWC, Nature, project page) | WebFetch the page and extract | best-effort |
 
-Run the script when applicable — it returns clean JSON that maps directly into the record. For sources without a script path, use WebFetch.
+Run the script when applicable — the JSON it returns maps almost directly into the record. For sources without a script path, use WebFetch.
 
 ### 2. Read the current registry
 
-Read `/Users/dobleefe/dataland/data.json` for two reasons:
+Read `/Users/dobleefe/dataland/data.json` once. Two reasons:
 
-1. **Determine the next id**: it is `max(records[].id) + 1`.
-2. **Match the style**: skim 2–3 existing records to calibrate length, tone, and field conventions. E.g., `task` is title-case noun phrase, `description` is 2–3 dense sentences, `params` may be `"Unknown"` if not reported, `license` uses canonical short forms (`"MIT"`, `"Apache 2.0"`, `"CC-BY-NC 4.0"`, `"Proprietary"`).
+1. **Find the next id**: `max(records[].id) + 1`.
+2. **Calibrate style**: skim 2–3 existing records — `description` is 2–3 dense factual sentences (~250–450 chars), `params` is the published count without rounding (`"340M"`, `"2.8B"`, not `"3B"`), licenses use canonical short forms (see `references/license-table.md`).
 
-Never hardcode the schema from memory. Read the file. Schemas drift; the file does not lie.
+### 3. Build the record(s)
 
-### 3. Build the record
+Fill every key listed under `ontology.primary_dimensions` and `ontology.attributes` plus `id` and `description`. Long keys, no abbreviations: `id, task, model, ai_system, architecture, domain, language, source_url, organization, params, year, license, description`.
 
-Fill every field in `ontology.attributes` plus the primary dimensions (`task`, `domain`, `language`) plus `id` and `description`. Long keys, no abbreviations.
+**Existing taxonomy — reuse when at all reasonable.** Inventing a new value is a permanent vocabulary split; slightly-loose reuse costs nothing. Before picking a new label, check whether one of these fits:
 
-**Direct mapping (from fetched metadata):**
-- `model` — the model/system/dataset name as published. Use the canonical name (`"BERT-large"`, not `"Bert (Devlin et al.)"`).
-- `organization` — the primary affiliation. For multi-org papers, pick the lead author's affiliation, or the affiliation listed first. For GitHub: the org owner (`"Ultralytics"`), not a personal account when an org exists. For multi-affiliation prefer the most recognizable (`"Google DeepMind"` over `"Google"` when both apply).
-- `year` — first publication / first release year, as an integer.
-- `license` — short canonical form. See `references/license-table.md` for the canonical mapping.
-- `source_url` — the URL the user provided, normalized (strip tracking params, prefer `arxiv.org/abs/<id>` over `pdf/`).
-- `params` — parameter count as string with the unit: `"340M"`, `"3.3B"`, `"~25M"`, `"Unknown"`. If the artifact is a dataset rather than a model, use `"N/A"`.
-- `description` — 2–3 sentences, dense, factual. Lead with what it is, then the novel mechanism, then a result if reported. Match the existing records' tone.
+- **task** (existing): Text Classification · Machine Translation · Question Answering · Image Captioning · Code Generation · Object Detection · Speech Recognition · Semantic Segmentation · Text Summarization · Protein Structure · Molecule Generation · Multimodal Reasoning · Audio Generation · Time Series Forecasting · Anomaly Detection
+- **domain** (existing): NLP · Multimodal · Code · Computer Vision · Audio · Biology · Chemistry · Time Series · Industrial AI
+- **ai_system** (closed enum): **model** · **workflow** · **agent** · **dataset** (see § 4 and `references/ai_system-examples.md`)
+- **language** is a **natural language** — never a programming language. The datahub is LATAM-leaning, so most records use BCP-47-ish codes like `"es-AR"`, `"es-PY"`, `"pt-BR"`, `"es-MX"`, `"qu"` (Quechua), `"gn"` (Guarani). Use a short English name (`"Spanish"`, `"English"`) only when no clear regional code applies. Use `"Multilingual"` for multi-language artifacts (NLLB-200, Whisper). Use `"N/A"` for artifacts with no natural language at all — pure vision (SAM, YOLO), audio synthesis, protein structure, time series.
 
-**Inferred fields (judgment required):**
-- `task` — the *task type*, not the model name. Pick from existing values in `data.json` when one fits (`"Text Classification"`, `"Image Captioning"`, `"Code Generation"`, etc.). Create a new task name only when no existing one is close.
-- `domain` — high-level field. Existing values include `"NLP"`, `"Multimodal"`, `"Code"`, `"Computer Vision"`, `"Audio"`, `"Biology"`, `"Chemistry"`, `"Time Series"`, `"Industrial AI"`. Same rule: reuse when close, invent only when distant.
-- `architecture` — short noun phrase (`"Transformer (Encoder)"`, `"Vision-Language"`, `"Diffusion + Transformer"`, `"Graph Diffusion"`, `"CNN + Memory Bank"`). Read the abstract to identify the dominant component.
-- `language` — programming language of the *reference implementation*, not the natural language the model handles. Almost always `"Python"` for modern ML work; default to it unless the README explicitly uses something else.
-- `ai_system` — one of exactly three values:
-    - `"model"` — a single trained model that takes inputs and produces outputs (BERT, YOLOv8, SAM).
-    - `"workflow"` — a pipeline of multiple steps, often using a model plus retrieval, decoding strategies, or post-processing (Whisper-large-v3 fits because it includes a multilingual transcription+translation pipeline; AlphaFold 3 fits because it's a structure-prediction pipeline).
-    - `"agent"` — an LLM driving tools/decisions in a loop, or one that's designed to be used agentically (GPT-4, CodeLlama-34B used for instruction-following).
-    The boundary is fuzzy; use the existing records as anchor points and pick the closest match.
+(These lists drift — re-derive from `data.json` if it's grown since the skill was written.)
 
-### 4. Confirm with the user before opening a PR
+#### § 3a. Mapping for HuggingFace **datasets**
 
-PRs are visible and irreversible. Show the draft record as a JSON block and the proposed PR title. Wait for approval. Take the user's edits seriously — they know the domain better than the fetched metadata.
+Datasets are the common case for this skill. Map fields like so:
 
-### 5. Open the PR
+| Field | Source for HF datasets |
+| --- | --- |
+| `model` | The dataset's display name — `cardData.pretty_name` if set, otherwise the `name` part of the HF id with hyphens preserved (`"google-argentinian-spanish"`). Yes, the field is called `model`; treat it as the artifact's name regardless of kind. |
+| `ai_system` | `"dataset"` — see § 4 |
+| `architecture` | A short modality + format descriptor derived from `modalities` and `tags`: `"Audio + Text (parquet)"`, `"Text (parquet)"`, `"Image + Text (webdataset)"`. Keep it short — this column is narrow in the UI. |
+| `task` | Map from `task_categories` (HF tag) or infer from `modalities`. `task_categories: ["automatic-speech-recognition"]` → existing `"Speech Recognition"`. Audio + text with no explicit task → `"Speech Recognition"` (the dominant use). Pure text corpora often → `"Text Classification"` if labeled, otherwise propose a new task only as a last resort. |
+| `language` | Natural language of the data — see the language rule above. Order of preference: `cardData.language` (canonical YAML), then `languages` (tag-derived), then parse the dataset notes/description, then the dataset name itself. Prefer a regional code when the source supports it (`"es-AR"` over `"es"` for Argentinian Spanish, `"pt-BR"` over `"pt"` for Brazilian Portuguese). |
+| `domain` | The high-level field — for speech, almost always `"Audio"`; for text corpora, `"NLP"`. |
+| `params` | `"N/A"` — datasets don't have parameters. Do not write the example count here; that belongs in `description`. |
+| `organization` | The dataset's primary maintainer. For HF datasets owned by a user account (e.g., `ylacombe/...`), use the underlying source organization if mentioned in the card (`"Google"` for the Argentinian Spanish corpus, which Google originally released). If no clear source org, use the HF account holder's name. |
+| `year` | `createdAt` year, unless the README cites an earlier original release year. |
+| `license` | `cardData.license` (most authoritative) → `license_tag` → README. Normalize via `references/license-table.md`. If nothing → `"Unknown"`. |
+| `source_url` | The user's URL, verbatim. |
+| `description` | 2–3 dense sentences: what's in it, how it was constructed, and an interesting quantitative scope (number of examples, hours of audio, size in GB, languages covered). Match the registry's terse factual tone. |
 
-Workflow assumes the repo is git-initialized with a remote and `gh` CLI authenticated. If not, see `references/no-git-repo.md` for the fallback (write the JSON to a temp file, tell the user the commands to set up the repo, then re-run).
+#### § 3b. Handling HuggingFace **collections**
+
+A collection URL expands. The fetcher returns `items[]` (each typed `model | dataset | paper | space`). Behavior:
+
+1. **Show the user the collection summary first.** Title, description, and the list of items by type. Ask whether to import (a) all dataset/model items, (b) a selected subset, or (c) just one. Collections often have 5–50 items — confirm scope before fetching every one.
+2. For each item the user confirms, call the matching fetcher (`hf-dataset` or `hf`) and build a record per § 3a or the model rules below.
+3. **Skip `paper` and `space` items by default.** Paper items can be added separately via the arxiv URL; space items aren't registry artifacts.
+4. Assign sequential ids starting from `max(records[].id) + 1`.
+5. The PR includes all the resulting records in one go. Title: `"Add <collection title> (<N> datasets)"`.
+
+The collection note text (`items[].note`) often contains the language and per-item summary — use it to inform `language` and `description` without re-fetching when possible.
+
+#### § 3c. Mapping for HuggingFace **models** (and other model sources)
+
+| Field | Source |
+| --- | --- |
+| `model` | The model's display name — `"BERT-large"`, `"GPT-4"`, the canonical capitalised form |
+| `ai_system` | `"model"` / `"workflow"` / `"agent"` — see § 4 |
+| `architecture` | Short noun phrase (`"Transformer (Encoder)"`, `"Vision-Language"`, `"Diffusion + Transformer"`) |
+| `task` | The headline use — match HF `pipeline_tag` against existing task labels |
+| `language` | Natural language the model handles. Examples: `"en"` (English-only model like BERT-base), `"Multilingual"` (NLLB-200, Whisper-large-v3, GPT-4), `"es-AR"` (a model fine-tuned specifically for Argentinian Spanish). Use `"N/A"` for non-linguistic modalities — vision (YOLOv8, SAM), audio synthesis, protein structure, time series. Never write `"Python"` here. |
+| `domain` | `"NLP"`, `"Multimodal"`, etc. |
+| `params` | Published count, verbatim, no rounding (`"2.8B"`, not `"3B"`). Use `~` only when the source is itself approximate. For families that ship multiple sizes, use the headline variant and name it in `description`. |
+| `organization` | The lead author's / model owner's affiliation. Prefer the most recognisable form (`"Google DeepMind"`, `"Meta AI"`). Single org, not `"X & Y"`. |
+| `year` | First-release year as int. |
+| `license` | Normalise via `references/license-table.md`. |
+| `source_url` | The user's URL, verbatim (strip tracking params; `arxiv.org/pdf/<id>` → `arxiv.org/abs/<id>`). |
+
+If the arxiv API returns no `affiliations` (most papers — the arxiv schema rarely includes them), WebFetch the abstract page or the project's papers-with-code entry to recover them.
+
+### 4. `ai_system` — the closed enum
+
+Four values. Pick the one that fits the headline claim:
+
+- **`"model"`** — a single trained network, single forward pass, well-defined I/O (BERT, YOLOv8, SAM, BLIP-2).
+- **`"workflow"`** — a pipeline of multiple components, or a model with non-trivial inference (Whisper-large-v3, AlphaFold 3, AudioLDM 2, PatchCore).
+- **`"agent"`** — instruction-tuned, designed to be driven by prompts and chosen actions (GPT-4, CodeLlama-34B, LLaVA-1.6).
+- **`"dataset"`** — a data corpus (HF dataset, manually curated benchmark, scraped collection). Has no parameters; `params` is `"N/A"`.
+
+`references/ai_system-examples.md` lists which existing records sit under each — use it for calibration.
+
+### 5. Confirm with the user before opening a PR
+
+PRs are visible and irreversible. Show the proposed record(s) as a JSON block plus the proposed PR title. Wait for approval — the user knows the domain better than the fetched metadata and may rewrite fields.
+
+### 6. Open the PR
+
+Workflow assumes the repo is git-initialized with a remote and `gh` CLI authenticated. If not, see `references/no-git-repo.md` for the fallback (write the JSON to a temp file, tell the user what's missing).
 
 ```sh
 cd /Users/dobleefe/dataland
-git checkout -b add-<slug>          # slug = lowercase model name with dashes, e.g. "add-bert-large"
-# edit data.json: insert the new record before the closing ]
+git checkout -b add-<slug>          # slug = lowercase artifact name, dashed
+# append the record(s) to data.json — see below
 git add data.json
-git commit -m "Add <Model Name> to dataset registry"
+git commit -m "Add <artifact name> to dataset registry"
 git push -u origin add-<slug>
-gh pr create --title "Add <Model Name>" --body "<one-line summary + source URL>"
+gh pr create --title "Add <artifact name>" --body "$BODY"
 ```
 
-Insert the new record at the **end** of the `records` array (before the closing `]`), preserving the trailing-newline convention and indentation of the existing file. Use a focused edit — never rewrite the whole file just to append one record.
+Append by inserting the new record(s) at the **end** of the `records` array (before the closing `]`), preserving indent + trailing newline. Do a focused edit — never rewrite the whole file.
+
+PR body template:
+
+```markdown
+**Source**: <source_url>
+**Artifact**: <model>  ·  **Organization**: <organization>  ·  **Year**: <year>
+**Inferred fields**: task=<task>, domain=<domain>, language=<language>, ai_system=<ai_system>
+```
 
 Report the PR URL back to the user.
 
 ## Schema reference (always defer to data.json)
 
-For the canonical shape, read `/Users/dobleefe/dataland/data.json`. The skill expects this top-level object:
+For the canonical shape, read `/Users/dobleefe/dataland/data.json`. Top-level:
 
 ```json
 {
@@ -100,21 +150,21 @@ For the canonical shape, read `/Users/dobleefe/dataland/data.json`. The skill ex
 }
 ```
 
-Each record carries every key listed under `primary_dimensions` and `attributes`, plus `id` (auto-increment integer) and `description` (free-text 2–3 sentences).
+Each record carries every key under `primary_dimensions` and `attributes`, plus `id` and `description`.
 
 ## Reference material
 
-When you need depth on a specific concern, consult these files — don't quote them inline in the main skill body:
-
 - `references/license-table.md` — short-form mapping for common licenses.
-- `references/ai_system-examples.md` — concrete examples of `"model"` vs `"workflow"` vs `"agent"` calls.
+- `references/ai_system-examples.md` — concrete examples of `"model"` vs `"workflow"` vs `"agent"` vs `"dataset"`.
 - `references/no-git-repo.md` — what to do when the repo isn't ready for a PR.
 - `references/extraction-tips.md` — extracting fields from messy HTML when no API is available.
 
 ## Anti-patterns
 
-- **Don't invent a `model` name.** If the page calls it "GPT-4", that's the name. Don't write "GPT-4 (OpenAI's flagship LLM)".
-- **Don't bury the source.** `source_url` is the URL the user gave you, verbatim (minus tracking params). Not a rewritten "canonical" link unless it's clearly equivalent (arxiv pdf → abs).
-- **Don't write a press release in `description`.** Match the existing tone: factual, dense, two-three sentences, no hype.
-- **Don't open a PR without confirming.** A PR is an external artifact. Always show the JSON first and wait for approval.
-- **Don't refactor `data.json` while appending.** Touch only the records array.
+- **Don't invent a `model` name.** Use the published one verbatim.
+- **Don't bury the source.** `source_url` is the URL the user gave you, minus tracking params.
+- **Don't write a press release in `description`.** Match the existing tone: factual, dense, 2–3 sentences.
+- **Don't open a PR without confirming.** Always show the JSON first.
+- **Don't refactor `data.json` while appending.** Touch only the records array; preserve formatting.
+- **`language` is never a programming language.** Always the natural language of the artifact's data (`"es-AR"`, `"pt-BR"`, `"qu"`, `"Multilingual"`) or `"N/A"` for non-linguistic modalities (vision, audio synthesis, protein, time series). The existing 15 seed records have `"Python"` — that's wrong and being phased out.
+- **Don't round `params`.** `"2.8B"` is not `"3B"`.

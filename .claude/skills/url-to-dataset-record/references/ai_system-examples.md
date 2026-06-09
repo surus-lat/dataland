@@ -1,6 +1,6 @@
-# Picking `ai_system`: model / workflow / agent
+# Picking `ai_system`: model / workflow / agent / dataset
 
-The boundary is fuzzy. These three categories are how the registry distinguishes "kinds of AI artifact". Calibrate against existing records.
+The boundary is fuzzy. These four categories are how the registry distinguishes "kinds of AI artifact". Calibrate against existing records.
 
 ## `"model"` — a single trained network
 
@@ -41,8 +41,18 @@ Existing records flagged `"agent"`:
 
 Pattern: general-purpose, instruction-tuned, designed to be driven by prompts.
 
+## `"dataset"` — a data corpus, no trained weights
+
+The artifact is data, not a model: HuggingFace datasets, scraped corpora, curated benchmarks. Has no parameters (`params: "N/A"`). The `architecture` field describes modality/format instead of a neural network (`"Audio + Text (parquet)"`, `"Text (parquet)"`, `"Image + Text (webdataset)"`). The `language` field holds the natural language(s) of the data, not the programming language of any loader.
+
+Existing records flagged `"dataset"`:
+- *(none yet — the registry started life with only models. Datasets are a new category being added now.)*
+
+Pattern: HF dataset URLs (`huggingface.co/datasets/...`), benchmark releases that ship data only, scraped or labeled corpora. If you can't point to "the trained checkpoint", it's a dataset.
+
 ## Decision shortcut
 
+- Is the artifact a data corpus / benchmark — no weights, just data? → **`"dataset"`**.
 - Is the artifact a single trained network with a single forward pass and a well-defined I/O contract? → **`"model"`**.
 - Is the artifact a pipeline that orchestrates multiple stages, or a model whose inference involves non-trivial procedure (diffusion sampling, retrieval, memory bank, multi-pass)? → **`"workflow"`**.
 - Is the artifact an instruction-tuned general-purpose system meant to be driven by prompts and chosen actions? → **`"agent"`**.
