@@ -2,7 +2,6 @@
 
 **A living, open registry of AI models, datasets, agents, and workflows — built by and for Latin America.**
 
-Most public AI catalogs treat the region as an afterthought: Spanish collapsed into one bucket, Portuguese into another, indigenous languages absent, and almost no visibility into who in LATAM is actually shipping AI. Datahub flips that. The vocabulary is LATAM-first, the contributors are LATAM-first, and every record points back to a real artifact you can use today.
 
 Open source. Open data. Anyone can add a record.
 
