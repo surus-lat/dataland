@@ -337,9 +337,8 @@
     };
 
     /* ─── Org Carousel ───────────────────────────────────────────────── */
-    function OrgCarousel({ th, records }) {
-      const orgs = [...new Set(records.map(r => r.organization))];
-      const items = [...orgs, ...orgs, ...orgs];
+    function OrgCarousel({ th, organizations }) {
+      const items = [...organizations, ...organizations, ...organizations];
       return (
         <div style={{ borderBottom: `1px solid ${th.divider}`, overflow: 'hidden', flexShrink: 0, padding: '9px 0', position: 'relative' }}>
           <div style={{ display: 'flex', gap: '0', animation: 'orgScroll 22s linear infinite', width: 'max-content' }}>
@@ -392,7 +391,7 @@
             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.28)' }}>application/json · {payload.records.length} records</span>
           </div>
           {/* org ticker */}
-          <OrgCarousel th={th} records={payload.records} />
+          <OrgCarousel th={th} organizations={(payload.contributing_organizations || []).map(o => o.name)} />
           {/* json body */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '22px 26px' }}>
             <pre style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10.5px', lineHeight: 1.75, color: 'rgba(255,255,255,0.55)', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: hl(raw) }} />
@@ -478,13 +477,14 @@
 
     /* ─── Column headers ────────────────────────────────────────────── */
     const COLS = [
-      { label: 'Task',         flex: '1.1fr' },
-      { label: 'Model',        flex: '1.0fr' },
-      { label: 'Architecture', flex: '1.2fr' },
-      { label: 'Domain',       flex: '0.7fr' },
-      { label: 'AI System',    flex: '0.7fr' },
-      { label: 'Org',          flex: '0.8fr' },
-      { label: 'Lang',         flex: '0.45fr' },
+      { label: 'task',         flex: '0.9fr' },
+      { label: 'input',        flex: '0.55fr' },
+      { label: 'model',        flex: '1.0fr' },
+      { label: 'architecture', flex: '1.1fr' },
+      { label: 'domain',       flex: '0.7fr' },
+      { label: 'ai system',    flex: '0.7fr' },
+      { label: 'org',          flex: '0.8fr' },
+      { label: 'lang',         flex: '0.45fr' },
     ];
 
     function ColHeaders({ th }) {
@@ -498,7 +498,7 @@
           {COLS.map(c => (
             <span key={c.label} style={{
               fontSize: '9px', fontFamily: th.mono, color: th.textSub,
-              letterSpacing: '0.20em', textTransform: 'uppercase',
+              letterSpacing: '0.20em',
               padding: '8px 0', userSelect: 'none',
             }}>{c.label}</span>
           ))}
@@ -534,6 +534,10 @@
           }}>
             {isTerm && isSelected ? '▶ ' : ''}{item.task}
           </span>
+          <span style={{
+            fontSize: '11px', fontFamily: th.mono, color: th.textSub,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>{item.input_type}</span>
           <span style={{
             fontSize: '11.5px', fontFamily: th.mono,
             color: th.textMono,
@@ -619,6 +623,7 @@
               <Field label="Parameters"   value={item.params}       mono />
               <Field label="Architecture" value={item.architecture} mono />
               <Field label="License"      value={item.license}      mono />
+              <Field label="Input Type"   value={item.input_type} />
               <Field label="Domain"       value={item.domain} />
               <Field label="AI System"    value={item.ai_system} />
               <Field label="Language"     value={item.language} />
@@ -707,6 +712,7 @@
         if (!q) return records;
         return records.filter(r =>
           r.task.toLowerCase().includes(q) ||
+          r.input_type.toLowerCase().includes(q) ||
           r.model.toLowerCase().includes(q) ||
           r.architecture.toLowerCase().includes(q) ||
           r.domain.toLowerCase().includes(q) ||

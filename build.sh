@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+node scripts/validate-data.mjs
+
 rm -rf dist
 mkdir -p dist
 
