@@ -137,30 +137,27 @@
 
   /* ── Hero ── */
   function DatahubHero() {
-    const [records, setRecords] = useState(null);
+    const [data, setData] = useState(null);
     useEffect(() => {
       fetch('data.json')
         .then(r => r.json())
-        .then(d => setRecords(d.records))
-        .catch(() => setRecords([]));
+        .then(setData)
+        .catch(() => setData({ records: [], domains: [], languages: [], contributing_organizations: [] }));
     }, []);
 
     const stats = useMemo(() => {
-      if (!records) return null;
-      // The hero headline counts only "real" languages — concrete natural-language
-      // tags like es-AR / pt-BR / qu. "Multilingual" and "N/A" are bookkeeping
-      // values for multi-language and non-linguistic artifacts; they shouldn't
-      // inflate the count.
-      const realLangs = records
-        .map(r => r.language)
-        .filter(l => l && l !== 'N/A' && l !== 'Multilingual');
+      if (!data) return null;
+      // Language count excludes the bookkeeping values "N/A" (non-linguistic
+      // artifacts) and "Multilingual" (multi-language) — those shouldn't inflate
+      // the headline number. Vocabulary is the source of truth, not the records.
+      const realLangs = (data.languages || []).filter(l => l !== 'N/A' && l !== 'Multilingual');
       return {
-        datasets:     records.length,
-        domains:      new Set(records.map(r => r.domain)).size,
-        languages:    new Set(realLangs).size,
-        contributors: new Set(records.map(r => r.organization)).size,
+        datasets:     (data.records || []).length,
+        domains:      (data.domains || []).length,
+        languages:    realLangs.length,
+        contributors: (data.contributing_organizations || []).length,
       };
-    }, [records]);
+    }, [data]);
 
     const clusterItems = stats
       ? [
