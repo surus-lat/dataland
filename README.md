@@ -22,10 +22,10 @@ No build step, no `node_modules`, no bundler. The page bootstraps React, Babel, 
   "tasks_supported": ["classify", "extract", "transcribe", "summarize", "retrieve_information", "reason", "chat", "voice"],
   "input_types":     ["text", "image", "audio", "video", "code"],
   "domains":         ["general", "medical", "legal", "finance", "scientific"],
-  "languages":       ["en", "Multilingual", "N/A"],
+  "languages":       ["es-AR", "es-BO", "es-CL", "...", "pt-BR", "qu", "gn", "ay", "en", "Multilingual", "N/A"],
 
   // descriptive attribute vocabularies
-  "ai_systems":      ["model", "workflow", "agent", "node"],
+  "ai_systems":      ["model", "workflow", "agent", "node", "dataset"],
   "architectures":   ["Transformer (Encoder)", "Transformer (Decoder)", "..."],
   "licenses":        ["Apache 2.0", "MIT", "..."],
   "contributing_organizations": [
@@ -53,7 +53,7 @@ No build step, no `node_modules`, no bundler. The page bootstraps React, Babel, 
 }
 ```
 
-`task` is a verb (the action). `input_type` is what the action is performed on. `domain` is a knowledge grouping (general / medical / legal / finance / scientific), not a technical bucket.
+`task` is a verb (the action). `input_type` is what the action is performed on. `domain` is a knowledge grouping (general / medical / legal / finance / scientific), not a technical bucket. `languages` is LATAM-focused — one Spanish variant per LATAM country, Brazilian Portuguese, the major indigenous languages (Quechua, Guarani, Aymara), plus utility values (`en`, `Multilingual`, `N/A`). European variants are intentionally out of scope.
 
 Derived values come from the top-level lists, not from `records`: the hero stats are `domains.length` / `languages.length` / `contributing_organizations.length`; the org carousel iterates `contributing_organizations`. Add a new record whose `task` is not yet in `tasks_supported` and the validator will tell you to add the verb to the list first.
 
