@@ -24,6 +24,29 @@
     "scientific"
   ],
   "languages": [
+    "es-AR",
+    "es-BO",
+    "es-CL",
+    "es-CO",
+    "es-CR",
+    "es-CU",
+    "es-DO",
+    "es-EC",
+    "es-GT",
+    "es-HN",
+    "es-MX",
+    "es-NI",
+    "es-PA",
+    "es-PE",
+    "es-PR",
+    "es-PY",
+    "es-SV",
+    "es-UY",
+    "es-VE",
+    "pt-BR",
+    "qu",
+    "gn",
+    "ay",
     "en",
     "Multilingual",
     "N/A"
@@ -32,7 +55,8 @@
     "model",
     "workflow",
     "agent",
-    "node"
+    "node",
+    "dataset"
   ],
   "architectures": [
     "Transformer (Encoder)",
