@@ -82,7 +82,6 @@ Domains are knowledge groupings, **not** technical buckets. "NLP" and
 | `medical` | Clinical, biomedical, pharmaceutical content |
 | `legal` | Statute, case law, contract text |
 | `finance` | Markets, banking, accounting |
-| `scientific` | Academic papers, research corpora outside the above |
 
 ### `languages` — LATAM-first
 

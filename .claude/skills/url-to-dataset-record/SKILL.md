@@ -19,7 +19,7 @@ The registry has no separate ontology file — the vocabularies are declared at 
 {
   "tasks_supported":   [ "classify","extract","transcribe","summarize","retrieve_information","reason","chat","voice" ],
   "input_types":       [ "text","image","audio","video","code" ],
-  "domains":           [ "general","medical","legal","finance","scientific" ],
+  "domains":           [ "general","medical","legal","finance" ],
   "languages":         [ "es-AR","es-BO","es-CL", ... "pt-BR","qu","gn","ay","en","Multilingual","N/A" ],  // LATAM-focused
   "ai_systems":        [ "model","workflow","agent","node","dataset" ],
   "architectures":     [ ... ],
@@ -35,7 +35,7 @@ Key semantics:
 
 - `task` is a **verb** (the action: `transcribe`, `classify`, `summarize`).
 - `input_type` is the **medium** the action is performed on (`audio`, `text`, `image`).
-- `domain` is a **knowledge grouping** (`general`, `medical`, `legal`, `finance`, `scientific`) — not a technical bucket like "NLP" or "Computer Vision".
+- `domain` is a **knowledge grouping** (`general`, `medical`, `legal`, `finance`) — not a technical bucket like "NLP" or "Computer Vision".
 - `language` is a **LATAM-focused** natural-language tag. Regional codes (`es-AR`, `pt-BR`) are preferred over plain `es` / `pt`. There is no `es` or `pt` in the vocabulary — every Spanish-speaking LATAM country has its own variant. Use `en` / `Multilingual` / `N/A` only when the artifact truly is English-only / multi-language / non-linguistic.
 - `ai_system` is the artifact kind. For HF datasets, this is **always `dataset`**.
 
@@ -70,7 +70,7 @@ Mapping from HF dataset metadata onto the registry schema:
 | `id` | `max(records[].id) + 1` |
 | `task` | A verb from `tasks_supported`. Map the dataset's headline use to the closest existing verb: speech corpora → `transcribe`; labeled text corpora → `classify`; QA corpora → `retrieve_information`; long-doc/summarization corpora → `summarize`. If no existing verb fits, propose adding one (see § 4). |
 | `input_type` | The medium, from `input_types`. Audio dataset → `audio`. Image dataset → `image`. Text dataset → `text`. Etc. |
-| `domain` | A knowledge grouping from `domains`. **Default is `general`** for any open-domain corpus. Use `medical`, `legal`, `finance`, or `scientific` only when the dataset's content is explicitly that domain. |
+| `domain` | A knowledge grouping from `domains`. **Default is `general`** for any open-domain corpus. Use `medical`, `legal`, or `finance` only when the dataset's content is explicitly that domain. |
 | `language` | A value in `languages`. **For LATAM speech and text corpora, use the regional code** (`es-AR`, `es-MX`, `pt-BR`, `qu`). Country-specific data → country code; truly multi-language datasets → `Multilingual`; non-linguistic data → `N/A`. There is no `es` or `pt` — every Spanish-speaking country has its own code. **If your dataset's regional code is missing from the vocabulary, add it.** |
 | `ai_system` | **Always `"dataset"` for this skill's records.** |
 | `architecture` | For datasets, a short modality + format descriptor: `"Audio + Text (parquet)"`, `"Text (parquet)"`, `"Image + Text (webdataset)"`. The column is narrow — keep it under ~30 chars. Add to `architectures` if a new descriptor is needed. |

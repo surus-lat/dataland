@@ -48,7 +48,7 @@ No build step, no `node_modules`, no bundler. The page bootstraps React, Babel, 
   // primary navigational axes
   "tasks_supported": ["classify", "extract", "transcribe", "summarize", "retrieve_information", "reason", "chat", "voice"],
   "input_types":     ["text", "image", "audio", "video", "code"],
-  "domains":         ["general", "medical", "legal", "finance", "scientific"],
+  "domains":         ["general", "medical", "legal", "finance"],
   "languages":       ["es-AR", "es-BO", "es-CL", "...", "pt-BR", "qu", "gn", "ay", "en", "Multilingual", "N/A"],
 
   // descriptive attribute vocabularies
