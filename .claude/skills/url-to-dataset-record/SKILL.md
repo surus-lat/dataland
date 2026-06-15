@@ -44,12 +44,12 @@ Key semantics:
 ### 1. Fetch the metadata
 
 ```sh
-python3 scripts/fetch_metadata.py hf-dataset ylacombe/google-argentinian-spanish
+python3 .claude/skills/url-to-dataset-record/scripts/fetch_metadata.py hf-dataset ylacombe/google-argentinian-spanish
 ```
 
 That returns the dataset card as JSON: `cardData`, `tags`, `task_categories`, `modalities`, `language`, `license`, `createdAt`, and the README text. Use this — it's deterministic and clean.
 
-For a **collection URL** (`huggingface.co/collections/<owner>/<slug>`), call `scripts/fetch_metadata.py hf-collection <url>` first to expand into `items[]`, show the user the title + summary + item list, ask which subset to import, then call `hf-dataset` per confirmed item. Skip `paper` and `space` items.
+For a **collection URL** (`huggingface.co/collections/<owner>/<slug>`), call `.claude/skills/url-to-dataset-record/scripts/fetch_metadata.py hf-collection <url>` first to expand into `items[]`, show the user the title + summary + item list, ask which subset to import, then call `hf-dataset` per confirmed item. Skip `paper` and `space` items.
 
 If the script path doesn't apply (rare — for a non-HF dataset URL), `WebFetch` the page and extract manually.
 
@@ -96,7 +96,7 @@ A plausible final record (the exact values come from the fetched metadata — th
   "ai_system": "dataset",
   "architecture": "Audio + Text (parquet)",
   "organization": "Google",
-  "license": "CC-BY-SA-4.0",
+  "license": "CC-BY-SA 4.0",
   "model": "google-argentinian-spanish",
   "params": "N/A",
   "year": 2020,
@@ -111,7 +111,7 @@ Note the vocabulary touches this single record requires:
 - `Google` may need to be added to `contributing_organizations`.
 - `transcribe`, `audio`, `general`, `dataset` are already in their vocabularies ✓
 - `Audio + Text (parquet)` likely needs to be added to `architectures`.
-- `CC-BY-SA-4.0` may need to be added to `licenses` (depending on the current list).
+- `CC-BY-SA 4.0` may need to be added to `licenses` (depending on the current list).
 
 Surface every one of these vocabulary touches in the PR body so the reviewer can see what's new.
 
@@ -156,9 +156,9 @@ Report the PR URL back to the user.
 
 The skill is dataset-first, but a few non-dataset URLs are also accepted as edge cases. Use the same workflow with these tweaks:
 
-- **HF model** (`huggingface.co/<owner>/<model>`): `ai_system` becomes `model` / `workflow` / `agent` depending on character (see § *ai_system semantics* below). `params` is the published count (`"340M"`, `"2.8B"`, no rounding). `architecture` is a model-architecture noun phrase (`"Transformer (Encoder)"`, `"Vision-Language"`). Use `scripts/fetch_metadata.py hf <owner>/<model>`.
-- **arxiv** (`arxiv.org/abs/...`): `scripts/fetch_metadata.py arxiv <id>`. Affiliations are often missing — `WebFetch` the abstract page or the project's papers-with-code entry to recover `organization`.
-- **GitHub repo** (`github.com/<owner>/<repo>`): `scripts/fetch_metadata.py github <owner>/<repo>`. Often a code companion to a paper — usually adds an existing record's `source_url` rather than a new record.
+- **HF model** (`huggingface.co/<owner>/<model>`): `ai_system` becomes `model` / `workflow` / `agent` depending on character (see § *ai_system semantics* below). `params` is the published count (`"340M"`, `"2.8B"`, no rounding). `architecture` is a model-architecture noun phrase (`"Transformer (Encoder)"`, `"Vision-Language"`). Use `.claude/skills/url-to-dataset-record/scripts/fetch_metadata.py hf <owner>/<model>`.
+- **arxiv** (`arxiv.org/abs/...`): `.claude/skills/url-to-dataset-record/scripts/fetch_metadata.py arxiv <id>`. Affiliations are often missing — `WebFetch` the abstract page or the project's papers-with-code entry to recover `organization`.
+- **GitHub repo** (`github.com/<owner>/<repo>`): `.claude/skills/url-to-dataset-record/scripts/fetch_metadata.py github <owner>/<repo>`. Often a code companion to a paper — usually adds an existing record's `source_url` rather than a new record.
 
 ### `ai_system` semantics
 
