@@ -88,7 +88,7 @@
 
     return (
       <div style={{
-        width: 500,
+        width: 'min(500px, 92vw)',
         transform: `scale(${S.termScale / 100}) translate(${S.termPos.x}px, ${S.termPos.y}px)`,
         transformOrigin: 'center bottom',
         fontFamily: MONO,
@@ -175,9 +175,10 @@
         <div style={{ position: 'absolute', inset: 0,
           background: 'linear-gradient(to bottom, rgba(10,13,20,0.34) 0%, transparent 30%, transparent 72%, rgba(10,13,20,0.40) 100%)' }} />
 
-        {/* Lat/long whisper — top-right, outside scale */}
-        <div style={{ position: 'absolute', top: 50, right: 56, zIndex: 6,
-          fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
+        {/* Lat/long whisper — top-right, outside scale. clamp() so it doesn't collide
+            with the nav-manifest at 360px while leaving desktop pixel-identical. */}
+        <div style={{ position: 'absolute', top: 50, right: 'clamp(16px, 8vw, 56px)', zIndex: 6,
+          fontFamily: MONO, fontSize: 'clamp(8px, 2.5vw, 10px)', letterSpacing: '0.18em', textTransform: 'uppercase',
           color: 'rgba(255,255,255,0.42)', textShadow: '0 1px 8px rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
           <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.32)' }}>◆</span>
@@ -190,13 +191,13 @@
           {/* Title block */}
           <div style={{ position: 'absolute', top: '30%', left: '50%', zIndex: 8, textAlign: 'center',
             transform: `translateX(-50%) translate(${S.textPos.x}px, ${S.textPos.y}px)` }}>
-            <div style={{ fontFamily: font, fontSize: S.titleSize, lineHeight: 1.0,
+            <div style={{ fontFamily: font, fontSize: 'clamp(40px, 12vw, 88px)', lineHeight: 1.0,
               color: 'rgba(255,255,255,0.96)', textShadow: '0 2px 24px rgba(0,0,0,0.42)' }}>
               Datahub
             </div>
-            <div style={{ fontFamily: font, fontSize: S.subSize, fontWeight: S.subWeight, lineHeight: 1.2,
+            <div style={{ fontFamily: font, fontSize: 'clamp(13px, 4vw, 19px)', fontWeight: S.subWeight, lineHeight: 1.2,
               color: 'rgba(255,255,255,0.62)', textShadow: '0 2px 16px rgba(0,0,0,0.4)',
-              marginTop: 14, whiteSpace: 'nowrap' }}>
+              marginTop: 14, whiteSpace: 'normal' }}>
               {subText}
             </div>
             {S.subsubShow && (
