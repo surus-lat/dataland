@@ -1,3 +1,4 @@
 dist/
 .wrangler/
 .DS_Store
+.gstack/
