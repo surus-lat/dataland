@@ -25,29 +25,28 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #0a0420;
+      background: #040c0a;
       color: #ece6d4;
       font-family: 'EB Garamond', Georgia, serif;
     }
-    html { scrollbar-width: thin; scrollbar-color: rgba(255,58,156,0.22) transparent; }
+    html { scrollbar-width: thin; scrollbar-color: rgba(172,238,192,0.22) transparent; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,58,156,0.22); border-radius: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.22); border-radius: 6px; }
 
-    /* ── Ambient living-layers backdrop + magenta+cyan synthwave wash ── */
+    /* ── Ambient living-layers backdrop (let it speak, no hue rotation) ── */
     #bg-frame {
       position: fixed; inset: 0; z-index: 0;
       width: 100%; height: 100%;
       border: none; pointer-events: none;
-      filter: hue-rotate(-25deg) saturate(1.15);
     }
     #bg-fade {
       position: fixed; inset: 0; z-index: 1;
       pointer-events: none;
       background:
-        radial-gradient(ellipse at 50% -10%, rgba(154,241,232,0.07), transparent 55%),
-        radial-gradient(ellipse at 50% 110%, rgba(255,58,156,0.10), transparent 60%),
-        linear-gradient(to bottom, rgba(11,5,28,0.22), rgba(11,5,28,0.48));
+        radial-gradient(ellipse at 50% -10%, rgba(195,238,255,0.06), transparent 55%),
+        radial-gradient(ellipse at 50% 110%, rgba(210,240,220,0.07), transparent 60%),
+        linear-gradient(to bottom, rgba(4,12,10,0.20), rgba(4,12,10,0.46));
     }
 
     /* ── Top bar ── */
@@ -58,7 +57,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
       color: rgba(236,230,212,0.42);
-      background: linear-gradient(to bottom, rgba(11,5,28,0.88), rgba(11,5,28,0));
+      background: linear-gradient(to bottom, rgba(4,12,10,0.88), rgba(4,12,10,0));
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     }
     #topbar a {
@@ -109,23 +108,23 @@
       padding: var(--pad-top) 64px var(--pad-bottom);
       overflow-y: auto;
       overflow-x: hidden;
-      /* scanlines + mint-magenta synthwave wash + indigo base */
+      /* scanlines + pale-cyan top wash + mint-mist bottom wash + teal-black base
+         (matches the Living Layers behind: mint mist + cyan sparkles on #040c0a) */
       background:
-        repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.014) 2px 3px),
-        radial-gradient(ellipse 80% 40% at 50% 0%,  rgba(154,241,232,0.08), transparent 62%),
-        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(255,58,156,0.07), transparent 65%),
-        rgba(11,5,28, var(--panel-alpha));
+        repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 3px),
+        radial-gradient(ellipse 80% 40% at 50% 0%,   rgba(195,238,255,0.04), transparent 62%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(210,240,220,0.04), transparent 65%),
+        rgba(4,13,8, var(--panel-alpha));
       backdrop-filter: blur(22px) saturate(1.5);
       -webkit-backdrop-filter: blur(22px) saturate(1.5);
       color: rgba(245,242,230,0.84);
-      border: 1px solid rgba(154,241,232,0.20);
+      border: 1px solid rgba(172,238,192,0.14);
       border-radius: 14px;
+      /* sober dark shadow only, no green halo */
       box-shadow:
-        0 60px 140px rgba(0,0,0,0.75),
-        0 30px 70px rgba(0,0,0,0.45),
-        0 0 0 1px rgba(255,255,255,0.04),
-        0 0 110px rgba(154,241,232,0.07),
-        0 0 80px rgba(255,58,156,0.06);
+        0 60px 140px rgba(0,0,0,0.72),
+        0 30px 70px rgba(0,0,0,0.42),
+        0 0 0 1px rgba(255,255,255,0.03);
     }
     @media (max-width: 760px) {
       #paper {
@@ -209,21 +208,20 @@
       color: #f4eed4;
       text-align: center;
       margin: 28px 0 10px;
-      /* chromatic aberration: magenta+cyan offsets, soft luminous halo */
+      /* chromatic aberration in-palette: pale cyan + mint, both close to LL behind */
       text-shadow:
-        -1.5px 0 0 rgba(255,58,156,0.55),
-        1.5px 0 0 rgba(154,241,232,0.55),
-        0 0 24px rgba(255,255,255,0.10),
-        0 0 50px rgba(255,58,156,0.10);
+        -1.5px 0 0 rgba(195,238,255,0.50),
+        1.5px 0 0 rgba(172,238,192,0.50),
+        0 0 18px rgba(255,255,255,0.07);
     }
     .paper-subtitle {
       font-family: 'EB Garamond', serif;
       font-style: italic;
       font-size: 17px;
-      color: rgba(192,244,208,0.82);
+      color: rgba(192,244,208,0.78);
       text-align: center;
       margin-bottom: 28px;
-      text-shadow: 0 0 14px rgba(154,241,232,0.18);
+      text-shadow: 0 0 10px rgba(172,238,192,0.10);
     }
 
     .authors {
@@ -266,7 +264,7 @@
       margin-bottom: 24px;
     }
 
-    /* ── Synthwave horizon-sun divider (half-sun with grid bands + cyan rails) ── */
+    /* ── Horizon-sun divider (synthwave silhouette, LL-palette colors) ── */
     .rule-dot {
       display: flex; align-items: center; justify-content: center;
       margin: 22px auto 36px;
@@ -274,17 +272,18 @@
     }
     .rule-dot::before, .rule-dot::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(to right, transparent, rgba(154,241,232,0.48), transparent);
+      background: linear-gradient(to right, transparent, rgba(195,238,255,0.50), transparent);
     }
     .rule-dot .rd-glyph {
       position: relative;
       width: 38px; height: 19px;
       background:
-        repeating-linear-gradient(0deg, transparent 0 2px, rgba(11,5,28,0.78) 2px 3px),
-        radial-gradient(ellipse at 50% 100%, #ffd0e4 0%, #ff86c4 30%, #ff3a9c 60%, #7a1f64 100%);
+        repeating-linear-gradient(0deg, transparent 0 2px, rgba(4,12,10,0.85) 2px 3px),
+        radial-gradient(ellipse at 50% 100%,
+          #ffffff 0%, #f5e6b8 28%, #d2f0dc 58%, #aceeC0 82%, #4d7762 100%);
       border-top-left-radius: 24px;
       border-top-right-radius: 24px;
-      box-shadow: 0 0 20px rgba(255,58,156,0.60), 0 0 42px rgba(255,58,156,0.28);
+      box-shadow: 0 0 12px rgba(172,238,192,0.32), 0 0 22px rgba(195,238,255,0.12);
     }
 
     /* ── Abstract block ── */
@@ -300,8 +299,8 @@
     .abstract {
       margin: 0 6px 52px;
       padding: 4px 22px;
-      border-left: 1px solid rgba(255,58,156,0.36);
-      box-shadow: -10px 0 30px -10px rgba(255,58,156,0.18);
+      border-left: 1px solid rgba(172,238,192,0.28);
+      box-shadow: -8px 0 24px -10px rgba(172,238,192,0.08);
     }
     .abstract p {
       font-family: 'EB Garamond', serif;
@@ -313,7 +312,7 @@
       hyphens: auto;
     }
     .abstract p:last-child { margin-bottom: 0; }
-    .abstract strong { color: #9af1e8; font-weight: 600; }
+    .abstract strong { color: #aceeC0; font-weight: 600; }
     .abstract em { color: #f5e6b8; }
 
     /* ── Section typography ── */
@@ -327,17 +326,17 @@
       margin-top: 40px;
       margin-bottom: 18px;
       padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,58,156,0.22);
+      border-bottom: 1px solid rgba(172,238,192,0.22);
       display: flex; align-items: baseline; gap: 14px;
-      text-shadow: 0 0 18px rgba(245,230,184,0.18);
+      text-shadow: 0 0 12px rgba(245,230,184,0.10);
     }
     h2.sec-title .sec-num {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
-      color: #ff3a9c; /* synthwave magenta */
+      color: #c3eeff; /* pale cyan, matches LL sparkles */
       letter-spacing: 0.04em;
       font-weight: 500;
-      text-shadow: 0 0 10px rgba(255,58,156,0.55);
+      text-shadow: 0 0 6px rgba(195,238,255,0.28);
     }
     h3.subsec-title {
       font-family: 'Cinzel', serif;
@@ -352,9 +351,9 @@
     h3.subsec-title .subsec-num {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      color: #ff86c4; /* lighter magenta */
+      color: #aceeC0; /* mint */
       font-weight: 500;
-      text-shadow: 0 0 8px rgba(255,58,156,0.45);
+      text-shadow: 0 0 5px rgba(172,238,192,0.22);
     }
 
     p.body {
@@ -368,14 +367,14 @@
       font-feature-settings: "liga", "kern";
     }
     p.body em { color: #f5e6b8; }
-    p.body strong { color: #9af1e8; font-weight: 600; }
+    p.body strong { color: #aceeC0; font-weight: 600; }
     p.body .term {
-      color: #ff86c4;
+      color: #f5e6b8;
       font-weight: 600;
-      text-shadow: 0 0 12px rgba(255,58,156,0.32);
+      text-shadow: 0 0 8px rgba(245,230,184,0.18);
     }
 
-    /* drop cap — champagne ivory with chromatic aberration (synth-elven illuminated capital) */
+    /* drop cap — pale-gold elvish capital with subtle cyan+mint split */
     section.body-section > p.body.first::first-letter {
       font-family: 'Cinzel', 'EB Garamond', serif;
       font-size: 54px;
@@ -385,10 +384,9 @@
       color: #f5e6b8;
       font-weight: 600;
       text-shadow:
-        -2px 0 0 rgba(255,58,156,0.55),
-        2px 0 0 rgba(154,241,232,0.55),
-        0 0 22px rgba(255,58,156,0.20),
-        0 0 40px rgba(154,241,232,0.10);
+        -2px 0 0 rgba(195,238,255,0.46),
+        2px 0 0 rgba(172,238,192,0.46),
+        0 0 14px rgba(172,238,192,0.10);
     }
 
     ul.body-list {
@@ -409,12 +407,12 @@
     ul.body-list li::before {
       content: '◆';
       position: absolute; left: 4px; top: 7px;
-      color: #ff86c4;
+      color: #c3eeff;
       font-size: 7px;
       opacity: 0.92;
-      text-shadow: 0 0 6px rgba(255,58,156,0.55);
+      text-shadow: 0 0 4px rgba(195,238,255,0.28);
     }
-    ul.body-list li strong { color: #9af1e8; font-weight: 600; }
+    ul.body-list li strong { color: #aceeC0; font-weight: 600; }
 
     /* ── Footer / colophon ── */
     .paper-footer {
@@ -428,14 +426,14 @@
       font-size: 10.5px;
       line-height: 1.7;
       color: rgba(245,242,230,0.78);
-      background: rgba(154,241,232,0.04);
-      border-left: 2px solid rgba(255,58,156,0.42);
+      background: rgba(172,238,192,0.03);
+      border-left: 2px solid rgba(172,238,192,0.32);
       padding: 14px 18px;
       margin: 24px auto 28px;
       max-width: 540px;
       text-align: left;
       border-radius: 2px;
-      box-shadow: -8px 0 24px -8px rgba(255,58,156,0.20);
+      box-shadow: -6px 0 20px -8px rgba(172,238,192,0.10);
     }
     .cite-block .cite-label {
       display: block;
@@ -489,96 +487,6 @@
     #toc .toc-row.active { color: rgba(192,244,208,0.85); }
     #toc .toc-row .toc-num { opacity: 0.55; min-width: 14px; }
     @media (max-width: 1180px) { #toc { display: none; } }
-
-    /* ── Admin panel (paper controls) ── */
-    #admin-panel {
-      position: fixed; bottom: 18px; left: 18px;
-      z-index: 40;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 12px 14px;
-      min-width: 240px;
-      background: rgba(11,5,28,0.82);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(154,241,232,0.20);
-      border-radius: 6px;
-      display: flex; flex-direction: column; gap: 10px;
-      user-select: none;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.55), 0 0 30px rgba(255,58,156,0.08);
-    }
-    #admin-panel .ap-header {
-      display: flex; align-items: center; gap: 8px;
-      color: rgba(154,241,232,0.78);
-      font-size: 8.5px; letter-spacing: 0.30em; text-transform: uppercase;
-    }
-    #admin-panel .ap-header::before {
-      content: ''; width: 5px; height: 5px; border-radius: 50%;
-      background: #9af1e8; box-shadow: 0 0 6px #9af1e8;
-    }
-    #admin-panel .ap-row {
-      display: flex; flex-direction: column; gap: 5px;
-    }
-    #admin-panel .ap-label {
-      font-size: 8.5px; letter-spacing: 0.26em; text-transform: uppercase;
-      color: rgba(245,230,200,0.55);
-    }
-    #admin-panel .ap-control {
-      display: flex; align-items: center; gap: 9px;
-    }
-    #admin-panel input[type="range"] {
-      flex: 1;
-      -webkit-appearance: none; appearance: none;
-      height: 2px; background: rgba(154,241,232,0.20);
-      border-radius: 2px; outline: none; cursor: pointer;
-    }
-    #admin-panel input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 11px; height: 11px; border-radius: 50%;
-      background: #9af1e8;
-      box-shadow: 0 0 8px rgba(154,241,232,0.65);
-      cursor: pointer;
-    }
-    #admin-panel input[type="range"]::-moz-range-thumb {
-      width: 11px; height: 11px; border-radius: 50%; border: none;
-      background: #9af1e8;
-      box-shadow: 0 0 8px rgba(154,241,232,0.65);
-      cursor: pointer;
-    }
-    #admin-panel .ap-value {
-      font-size: 10px; letter-spacing: 0.10em;
-      color: rgba(245,230,200,0.78); min-width: 32px; text-align: right;
-    }
-    #admin-panel .ap-segments {
-      display: flex; gap: 4px;
-    }
-    #admin-panel .ap-seg {
-      flex: 1;
-      padding: 5px 8px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(154,241,232,0.18);
-      color: rgba(236,230,212,0.55);
-      font-family: inherit;
-      font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase;
-      cursor: pointer; border-radius: 3px;
-      transition: all 0.15s;
-    }
-    #admin-panel .ap-seg:hover {
-      color: rgba(154,241,232,0.85);
-      border-color: rgba(154,241,232,0.35);
-    }
-    #admin-panel .ap-seg.active {
-      background: rgba(255,58,156,0.14);
-      border-color: rgba(255,58,156,0.55);
-      color: #ff86c4;
-      box-shadow: 0 0 14px rgba(255,58,156,0.30);
-    }
-    #admin-panel .ap-hint {
-      font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
-      color: rgba(245,230,200,0.35);
-      padding-top: 4px;
-      border-top: 1px solid rgba(154,241,232,0.10);
-    }
-    @media (max-width: 1180px) { #admin-panel { display: none; } }
 
     /* Scroll progress bar */
     #progress {
@@ -845,29 +753,6 @@ SURUS Team &amp; F. Perelman (2026). <em>On the missing data layer and a potenti
     </div><!-- /#paper-content -->
   </article>
 
-  <div id="admin-panel" aria-label="Paper controls">
-    <div class="ap-header">paper · controls</div>
-
-    <div class="ap-row">
-      <span class="ap-label">translucency</span>
-      <div class="ap-control">
-        <input type="range" id="ap-translucency" min="40" max="95" step="1" value="80">
-        <span class="ap-value" id="ap-translucency-v">0.80</span>
-      </div>
-    </div>
-
-    <div class="ap-row">
-      <span class="ap-label">header</span>
-      <div class="ap-segments">
-        <button class="ap-seg active" data-density="full"    type="button">full</button>
-        <button class="ap-seg"        data-density="compact" type="button">compact</button>
-        <button class="ap-seg"        data-density="min"     type="button">min</button>
-      </div>
-    </div>
-
-    <div class="ap-hint">drag panel edges to resize</div>
-  </div>
-
   <script>
     var paper = document.getElementById('paper');
     var content = document.getElementById('paper-content');
@@ -920,45 +805,25 @@ SURUS Team &amp; F. Perelman (2026). <em>On the missing data layer and a potenti
       });
     });
 
-    // ── translucency slider ──
+    // ── restore translucency from previous session (panel UI removed) ──
     (function () {
-      var slider = document.getElementById('ap-translucency');
-      var label = document.getElementById('ap-translucency-v');
-      function set(v) {
-        var a = v / 100;
-        paper.style.setProperty('--panel-alpha', a);
-        label.textContent = a.toFixed(2);
-        try { localStorage.setItem('paper.alpha', String(v)); } catch (e) {}
-      }
-      slider.addEventListener('input', function () { set(slider.value); });
       try {
         var s = parseInt(localStorage.getItem('paper.alpha'), 10);
-        if (s >= 40 && s <= 95) { slider.value = s; }
+        if (s >= 40 && s <= 95) paper.style.setProperty('--panel-alpha', s / 100);
       } catch (e) {}
-      set(slider.value);
     })();
 
-    // ── header density segments ──
+    // ── restore header density from previous session (panel UI removed) ──
     (function () {
-      var segs = document.querySelectorAll('#admin-panel .ap-seg');
-      function set(d) {
-        paper.classList.remove('density-full', 'density-compact', 'density-min');
-        paper.classList.add('density-' + d);
-        segs.forEach(function (s) { s.classList.toggle('active', s.dataset.density === d); });
-        try { localStorage.setItem('paper.density', d); } catch (e) {}
-      }
-      segs.forEach(function (s) {
-        s.addEventListener('click', function () { set(s.dataset.density); });
-      });
-      var saved = 'full';
+      var d = 'full';
       try {
-        var d = localStorage.getItem('paper.density');
-        if (d === 'full' || d === 'compact' || d === 'min') saved = d;
+        var v = localStorage.getItem('paper.density');
+        if (v === 'full' || v === 'compact' || v === 'min') d = v;
       } catch (e) {}
-      set(saved);
+      paper.classList.add('density-' + d);
     })();
 
-    // ── resize handles (drag from any edge or corner) ──
+    // ── resize handles (drag from any edge or corner) + geo persistence ──
     (function () {
       var handles = paper.querySelectorAll('.resize-handle');
       var state = null;
@@ -972,6 +837,35 @@ SURUS Team &amp; F. Perelman (2026). <em>On the missing data layer and a potenti
         paper.style.width = r.width + 'px';
         paper.style.height = r.height + 'px';
         paper.style.maxWidth = 'none';
+      }
+      function saveGeo() {
+        try {
+          var r = paper.getBoundingClientRect();
+          localStorage.setItem('paper.geo', JSON.stringify({
+            left: Math.round(r.left), top: Math.round(r.top),
+            width: Math.round(r.width), height: Math.round(r.height),
+          }));
+        } catch (e) {}
+      }
+      function restoreGeo() {
+        try {
+          var raw = localStorage.getItem('paper.geo');
+          if (!raw) return;
+          var g = JSON.parse(raw);
+          if (!g || typeof g.width !== 'number' || typeof g.height !== 'number') return;
+          var W = Math.max(360, Math.min(g.width,  window.innerWidth  - 16));
+          var H = Math.max(280, Math.min(g.height, window.innerHeight - 16));
+          var L = Math.max(8,   Math.min(g.left,   window.innerWidth  - W - 8));
+          var T = Math.max(8,   Math.min(g.top,    window.innerHeight - H - 8));
+          paper.style.left = L + 'px';
+          paper.style.top = T + 'px';
+          paper.style.right = 'auto';
+          paper.style.bottom = 'auto';
+          paper.style.transform = 'none';
+          paper.style.width = W + 'px';
+          paper.style.height = H + 'px';
+          paper.style.maxWidth = 'none';
+        } catch (e) {}
       }
       function start(e, dir) {
         e.preventDefault();
@@ -1018,12 +912,14 @@ SURUS Team &amp; F. Perelman (2026). <em>On the missing data layer and a potenti
         if (!state) return;
         state = null;
         document.body.classList.remove('resizing');
+        saveGeo();
       }
       handles.forEach(function (h) {
         h.addEventListener('mousedown', function (e) { start(e, h.dataset.dir); });
       });
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', end);
+      restoreGeo();
     })();
   </script>
 </body>
