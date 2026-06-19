@@ -10,6 +10,7 @@ cp datahub.html dist/
 cp paper.html dist/
 cp "Living Layers.html" dist/
 cp data.json dist/
+cp llms.txt dist/
 cp hero.jsx dist/
 cp tweaks-panel.jsx dist/
 cp _headers dist/
