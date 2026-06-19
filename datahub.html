@@ -109,8 +109,20 @@
       0%,100% { box-shadow: 0 0 0 0 rgba(172,238,192,0); }
       50%      { box-shadow: 0 0 0 5px rgba(172,238,192,0.15); }
     }
-    @media (max-width: 768px) {
-      #nav-manifest { top: 64px; right: 24px; }
+    /* ── Mobile breakpoint (kept in sync with MOBILE_BREAKPOINT JS const = 600) ── */
+    :root { --mobile-max: 600px; }
+    @media (max-width: 600px) {
+      /* Fix #1: iOS Safari auto-zooms any input below 16px font-size; desktop keeps 12.5px.
+         !important because the input also carries a 12.5px inline style we deliberately don't touch. */
+      #root input[type="text"] { font-size: 16px !important; }
+
+      /* Fix #6: nav-manifest position + WCAG-AA 44px tap targets */
+      #nav-manifest { top: 64px; right: 16px; }
+      .nm-row { min-height: 44px; padding: 10px 12px; margin-bottom: 4px; }
+
+      /* Fix #8: always-visible thin horizontal scrollbar on the data table */
+      [data-table-scroll]::-webkit-scrollbar { height: 4px; }
+      [data-table-scroll]::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.30); }
     }
 
     /* ── Hero (top page) — DatahubHero renders inside ── */
@@ -142,6 +154,11 @@
     @keyframes slideRight {
       from { opacity: 0; transform: translateX(18px); }
       to   { opacity: 1; transform: translateX(0); }
+    }
+    /* Fix #7: bottom-sheet entrance on mobile */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
     @keyframes termBlink {
       0%,100% { opacity: 1; } 50% { opacity: 0; }
@@ -208,6 +225,11 @@
   <script type="text/babel" src="tweaks-panel.jsx"></script>
   <script type="text/babel">
     const { useState, useMemo, useEffect, useRef } = React;
+
+    /* Mobile breakpoint — single source of truth shared with the CSS
+       --mobile-max custom property. Keep both literals in sync (CSS media
+       queries can't read CSS custom properties at parse time). */
+    const MOBILE_BREAKPOINT = 600;
 
     /* ─── Data ─────────────────────────────────────────────────────── */
     /* Source of truth lives in /data.json — fetched once inside <App />. */
@@ -560,6 +582,42 @@
       const isTerm = th.id === 'terminal';
       const isScifi = th.id === 'scifi';
 
+      // Viewport-aware: side-drawer on desktop, bottom-sheet on mobile.
+      const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
+      useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+      }, []);
+
+      // Swipe-down-to-dismiss on the bottom-sheet header (mobile only).
+      const sheetRef = useRef(null);
+      const touchStartY = useRef(null);
+      const onTouchStart = (e) => {
+        if (!isMobile) return;
+        touchStartY.current = e.touches[0].clientY;
+      };
+      const onTouchMove = (e) => {
+        if (!isMobile || touchStartY.current == null || !sheetRef.current) return;
+        const dy = e.touches[0].clientY - touchStartY.current;
+        // Only follow downward drags; ignore upward (treat as scroll).
+        if (dy > 0) sheetRef.current.style.transform = `translateY(${dy}px)`;
+      };
+      const onTouchEnd = (e) => {
+        if (!isMobile || touchStartY.current == null || !sheetRef.current) return;
+        const dy = (e.changedTouches[0].clientY - touchStartY.current);
+        touchStartY.current = null;
+        if (dy > 80) {
+          onClose();
+        } else {
+          sheetRef.current.style.transition = 'transform 0.18s ease';
+          sheetRef.current.style.transform = 'translateY(0)';
+          setTimeout(() => {
+            if (sheetRef.current) sheetRef.current.style.transition = '';
+          }, 200);
+        }
+      };
+
       const Field = ({ label, value, mono, full }) => (
         <div style={{ marginBottom: '14px', gridColumn: full ? '1 / -1' : undefined }}>
           <div style={{
@@ -575,20 +633,50 @@
         </div>
       );
 
+      const sheetStyle = isMobile
+        ? {
+            position: 'fixed', left: 0, right: 0, bottom: 0,
+            height: '70dvh', zIndex: 100,
+            background: th.drawerBg,
+            borderTop: `1px solid ${th.divider}`,
+            borderLeft: 'none',
+            display: 'flex', flexDirection: 'column',
+            animation: 'slideUp 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
+            overflow: 'hidden', minWidth: 0,
+            touchAction: 'pan-y',
+          }
+        : {
+            flex: '0 0 42%', background: th.drawerBg,
+            borderLeft: `1px solid ${th.divider}`,
+            display: 'flex', flexDirection: 'column',
+            animation: 'slideRight 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
+            overflow: 'hidden', position: 'relative', minWidth: 0,
+          };
+
       return (
-        <div style={{
-          flex: '0 0 42%', background: th.drawerBg,
-          borderLeft: `1px solid ${th.divider}`,
-          display: 'flex', flexDirection: 'column',
-          animation: 'slideRight 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
-          overflow: 'hidden', position: 'relative', minWidth: 0,
-        }}>
-          {/* Drawer header */}
-          <div style={{
+        <React.Fragment>
+          {/* Mobile-only backdrop. Tap-to-close — the de-facto sheet pattern. */}
+          {isMobile && (
+            <div
+              onClick={onClose}
+              style={{
+                position: 'fixed', inset: 0, zIndex: 99,
+                background: 'rgba(0,0,0,0.4)',
+              }}
+            />
+          )}
+        <div ref={sheetRef} style={sheetStyle}>
+          {/* Drawer header — also the swipe-down handle on mobile */}
+          <div
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            style={{
             padding: '14px 18px', flexShrink: 0,
             borderBottom: `1px solid ${th.divider}`,
             background: th.headerBg,
             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+            cursor: isMobile ? 'grab' : 'default',
           }}>
             <div>
               <div style={{
@@ -618,7 +706,7 @@
           {/* Drawer body */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '18px' }}>
             <Field label="Description" value={item.description} full />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0 14px' }}>
               <Field label="Model"        value={item.model}        mono />
               <Field label="Parameters"   value={item.params}       mono />
               <Field label="Architecture" value={item.architecture} mono />
@@ -645,6 +733,7 @@
             </div>
           </div>
         </div>
+        </React.Fragment>
       );
     }
 
@@ -755,7 +844,7 @@
           <div
             className={`${isTerm ? 'scanlines' : ''} ${isScifi ? 'hud-corners' : ''}`}
             style={{
-              width: 'min(960px, 93vw)', height: 'min(640px, 88vh)',
+              width: 'min(960px, 93vw)', height: 'min(640px, 88dvh)',
               background: th.panelBg(op),
               backdropFilter: th.backdrop, WebkitBackdropFilter: th.backdrop,
               border: `1px solid ${th.border}`,
@@ -826,9 +915,10 @@
                 transition: 'flex 0.22s cubic-bezier(0.25,0.46,0.45,0.94)',
                 minWidth: 0,
               }}>
-                {/* Horizontal scroll wrapper */}
+                {/* Horizontal scroll wrapper (data-table-scroll → mobile scrollbar style) */}
                 <div
                   ref={tableScrollRef}
+                  data-table-scroll
                   style={{
                     flex: 1, display: 'flex', flexDirection: 'column',
                     overflowX: 'auto', overflowY: 'hidden', minHeight: 0,
