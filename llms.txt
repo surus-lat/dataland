@@ -1,0 +1,65 @@
+# dataland — open dataset registry for AI in Latin America
+
+This site is a referential registry of datasets, especially LATAM-language
+data. There is no backend. The entire registry is one static JSON file:
+
+  https://datahub.lat/data.json
+
+## Shape
+
+Top-level keys declare the **vocabularies** (the allowed values for every
+constrained field). `records` is a flat array of dataset entries that
+reference those vocabularies.
+
+  - tasks_supported            verbs the dataset trains/evaluates (e.g. "transcribe")
+  - input_type                 mediums consumed (e.g. "audio")
+  - output_type                mediums produced (e.g. "text")
+  - domains                    knowledge groupings (e.g. "general", "medical")
+  - languages                  LATAM-first tags; sub-variant codes like "es-AR",
+                               coarse "es"/"pt" when sub-variants are unstated,
+                               "Multilingual" for multi-language data, "N/A" for
+                               non-linguistic
+  - licenses                   short-form names (e.g. "CC0", "CC-BY-SA 4.0")
+  - contributing_organizations array of { name, logo }
+
+Each entry in `records` has these fields:
+
+  id            int, unique
+  task          verb from tasks_supported
+  input_type    from input_type
+  output_type   from output_type
+  domain        from domains
+  languages     array of tags from languages (non-empty)
+  organization  name from contributing_organizations
+  license       from licenses
+  model         the dataset's display name
+  year          first-release year, int
+  source_url    canonical URL to the upstream dataset (HF, Mozilla Data
+                Collective, etc.) — this is what you fetch to actually
+                get the data
+  description   2–3 sentences with quantitative scope
+
+## Querying
+
+There is no query API. To find datasets:
+
+  1. GET https://datahub.lat/data.json
+  2. Filter records[] client-side on whatever fields matter to you.
+  3. Each surviving record's `source_url` points to the dataset itself.
+     Go there to download.
+
+Example — every transcription dataset that covers Argentinian Spanish:
+
+  const r = await fetch('https://datahub.lat/data.json').then(r => r.json())
+  const hits = r.records.filter(d =>
+    d.task === 'transcribe' && d.languages.includes('es-AR'))
+  // hits[i].source_url is the upstream dataset URL
+
+## Contributing
+
+Open registry. To add a dataset, open a PR against:
+
+  https://github.com/surus-lat/dataland
+
+The `url-to-dataset-record` skill (in Claude Code) drafts records from
+HuggingFace and Mozilla Data Collective URLs.

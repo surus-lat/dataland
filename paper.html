@@ -23,29 +23,31 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       width: 100%;
-      background: #040c0a;
+      height: 100%;
+      overflow: hidden;
+      background: #0a0420;
       color: #ece6d4;
       font-family: 'EB Garamond', Georgia, serif;
     }
-    html { scrollbar-width: thin; scrollbar-color: rgba(172,238,192,0.18) transparent; }
+    html { scrollbar-width: thin; scrollbar-color: rgba(255,58,156,0.22) transparent; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.18); border-radius: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,58,156,0.22); border-radius: 6px; }
 
-    /* ── Ambient living-layers backdrop ── */
+    /* ── Ambient living-layers backdrop + magenta+cyan synthwave wash ── */
     #bg-frame {
       position: fixed; inset: 0; z-index: 0;
       width: 100%; height: 100%;
       border: none; pointer-events: none;
-      opacity: 0.32;
-      filter: saturate(0.85) brightness(0.65);
+      filter: hue-rotate(-25deg) saturate(1.15);
     }
     #bg-fade {
       position: fixed; inset: 0; z-index: 1;
       pointer-events: none;
       background:
-        radial-gradient(ellipse at 50% 0%,   rgba(172,238,192,0.05), transparent 55%),
-        linear-gradient(to bottom, rgba(4,12,10,0.55), rgba(4,12,10,0.78));
+        radial-gradient(ellipse at 50% -10%, rgba(154,241,232,0.07), transparent 55%),
+        radial-gradient(ellipse at 50% 110%, rgba(255,58,156,0.10), transparent 60%),
+        linear-gradient(to bottom, rgba(11,5,28,0.22), rgba(11,5,28,0.48));
     }
 
     /* ── Top bar ── */
@@ -56,7 +58,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
       color: rgba(236,230,212,0.42);
-      background: linear-gradient(to bottom, rgba(4,12,10,0.85), rgba(4,12,10,0));
+      background: linear-gradient(to bottom, rgba(11,5,28,0.88), rgba(11,5,28,0));
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     }
     #topbar a {
@@ -85,129 +87,171 @@
       #topbar .tb-mid { display: none; }
     }
 
-    /* ── Paper sheet ── */
+    /* ── Floating translucent paper panel
+       Outer #paper = positioning shell + resize handle host.
+       Inner #paper-content = the visible panel, scroll container.
+       6px inset on all sides leaves room for edge-grab handles outside the
+       visual border without breaking the scrollbar. ── */
     #paper {
-      position: relative; z-index: 5;
-      max-width: 760px;
-      margin: 96px auto 120px;
-      padding: 96px 78px 92px;
-      /* layers, top to bottom:
-         1. golden sun-kiss bleeding in from above the page
-         2. soft mint halo at the crown
-         3. warm cream paper gradient                                 */
-      background:
-        radial-gradient(ellipse 95% 45% at 50% -8%, rgba(245,185,69,0.22), transparent 65%),
-        radial-gradient(ellipse 70% 50% at 50% 4%, rgba(172,238,192,0.10), transparent 72%),
-        linear-gradient(180deg, #f8efcf 0%, #f1e8cd 28%, #efe7cf 100%);
-      color: #2b2820;
-      border-radius: 4px;
-      box-shadow:
-        0 60px 140px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(172,238,192,0.16),
-        0 -20px 80px rgba(245,185,69,0.08),
-        0 0 80px rgba(172,238,192,0.04);
+      position: fixed; z-index: 5;
+      top: 80px; bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 80px);
+      max-width: 800px;
+      --panel-alpha: 0.80;
+      --pad-top: 64px;
+      --pad-bottom: 72px;
     }
-    #paper::before {
-      /* subtle paper grain */
-      content: '';
-      position: absolute; inset: 0;
-      pointer-events: none;
-      background-image:
-        repeating-linear-gradient(0deg, rgba(80,60,30,0.012) 0 1px, transparent 1px 3px),
-        repeating-linear-gradient(90deg, rgba(80,60,30,0.012) 0 1px, transparent 1px 3px);
-      mix-blend-mode: multiply;
-      border-radius: inherit;
+    #paper-content {
+      position: absolute;
+      top: 6px; right: 6px; bottom: 6px; left: 6px;
+      padding: var(--pad-top) 64px var(--pad-bottom);
+      overflow-y: auto;
+      overflow-x: hidden;
+      /* scanlines + mint-magenta synthwave wash + indigo base */
+      background:
+        repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.014) 2px 3px),
+        radial-gradient(ellipse 80% 40% at 50% 0%,  rgba(154,241,232,0.08), transparent 62%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(255,58,156,0.07), transparent 65%),
+        rgba(11,5,28, var(--panel-alpha));
+      backdrop-filter: blur(22px) saturate(1.5);
+      -webkit-backdrop-filter: blur(22px) saturate(1.5);
+      color: rgba(245,242,230,0.84);
+      border: 1px solid rgba(154,241,232,0.20);
+      border-radius: 14px;
+      box-shadow:
+        0 60px 140px rgba(0,0,0,0.75),
+        0 30px 70px rgba(0,0,0,0.45),
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 0 110px rgba(154,241,232,0.07),
+        0 0 80px rgba(255,58,156,0.06);
     }
     @media (max-width: 760px) {
-      #paper { margin: 78px 14px 80px; padding: 56px 26px 64px; }
+      #paper {
+        top: 68px; bottom: 24px;
+        width: calc(100% - 24px);
+        --pad-top: 36px;
+        --pad-bottom: 48px;
+      }
+      #paper-content { padding-left: 22px; padding-right: 22px; }
     }
+
+    /* ── Resize handles on all 4 edges + 4 corners ── */
+    .resize-handle {
+      position: absolute;
+      z-index: 8;
+      transition: background 0.15s;
+      background: transparent;
+    }
+    .resize-handle.top    { top: 0;    left: 18px; right: 18px; height: 6px;  cursor: ns-resize; }
+    .resize-handle.bottom { bottom: 0; left: 18px; right: 18px; height: 6px;  cursor: ns-resize; }
+    .resize-handle.left   { left: 0;   top: 18px;  bottom: 18px; width: 6px;  cursor: ew-resize; }
+    .resize-handle.right  { right: 0;  top: 18px;  bottom: 18px; width: 6px;  cursor: ew-resize; }
+    .resize-handle.tl     { top: 0;    left: 0;   width: 18px; height: 18px; cursor: nwse-resize; }
+    .resize-handle.tr     { top: 0;    right: 0;  width: 18px; height: 18px; cursor: nesw-resize; }
+    .resize-handle.bl     { bottom: 0; left: 0;   width: 18px; height: 18px; cursor: nesw-resize; }
+    .resize-handle.br     { bottom: 0; right: 0;  width: 18px; height: 18px; cursor: nwse-resize; }
+    .resize-handle:hover { background: rgba(154,241,232,0.12); }
+    /* a small cyan L-corner glyph at bottom-right so resize is discoverable */
+    .resize-handle.br::after {
+      content: '';
+      position: absolute; bottom: 5px; right: 5px;
+      width: 7px; height: 7px;
+      border-right: 1.5px solid rgba(154,241,232,0.62);
+      border-bottom: 1.5px solid rgba(154,241,232,0.62);
+      box-shadow: 0 0 8px rgba(154,241,232,0.30);
+    }
+    body.resizing, body.resizing * { user-select: none !important; }
+    @media (max-width: 760px) { .resize-handle { display: none; } }
+
+    /* ── Header density: compact + min variants reduce title-block height ── */
+    #paper.density-compact .preprint-id    { font-size: 8.5px; top: 16px; right: 20px; }
+    #paper.density-compact { --pad-top: 42px; }
+    #paper.density-compact h1.paper-title  { font-size: 26px; margin: 18px 0 8px; }
+    #paper.density-compact .paper-subtitle { font-size: 15px;  margin-bottom: 18px; }
+    #paper.density-compact .authors        { font-size: 14.5px; margin-bottom: 4px; line-height: 1.5; }
+    #paper.density-compact .affiliations   { font-size: 11.5px; margin-bottom: 6px; }
+    #paper.density-compact .paper-date     { font-size: 9px;   margin-bottom: 16px; letter-spacing: 0.18em; }
+    #paper.density-compact .rule-dot       { margin: 14px auto 28px; width: 240px; }
+
+    #paper.density-min .preprint-id        { font-size: 8px;   top: 12px; right: 16px; }
+    #paper.density-min { --pad-top: 28px; }
+    #paper.density-min h1.paper-title      { font-size: 20px; margin: 6px 0 4px; letter-spacing: 0.04em; }
+    #paper.density-min .paper-subtitle     { font-size: 12.5px; margin-bottom: 10px; }
+    #paper.density-min .authors            { font-size: 12.5px; margin-bottom: 2px; line-height: 1.4; }
+    #paper.density-min .affiliations       { font-size: 10.5px; margin-bottom: 4px; }
+    #paper.density-min .paper-date         { font-size: 8.5px; margin-bottom: 8px; }
+    #paper.density-min .rule-dot           { margin: 6px auto 18px; width: 180px; }
+    #paper.density-min .abstract           { margin-bottom: 36px; }
+    #paper.density-min .abstract-label     { font-size: 9px; margin-bottom: 10px; }
 
     /* ── Paper header ── */
     .preprint-id {
-      position: absolute; top: 28px; right: 32px;
+      position: absolute; top: 22px; right: 26px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px; letter-spacing: 0.22em;
-      color: rgba(31,61,42,0.55);
+      color: rgba(172,238,192,0.50);
       text-align: right; line-height: 1.7;
     }
-    .preprint-id .pid-line {
-      display: block;
-    }
-    .preprint-id .pid-class {
-      color: rgba(31,61,42,0.85);
-      font-weight: 500;
-    }
+    .preprint-id .pid-line { display: block; }
+    .preprint-id .pid-class { color: rgba(172,238,192,0.78); font-weight: 500; }
     @media (max-width: 760px) {
-      .preprint-id { position: static; text-align: left; margin-bottom: 28px; }
-    }
-
-    .sun-ornament {
-      display: block;
-      margin: 4px auto 28px;
-      width: 108px; height: 108px;
-      filter: drop-shadow(0 0 22px rgba(245,185,69,0.32));
-    }
-
-    /* ── Botanical corner ornaments on the paper sheet ── */
-    .corner-ornament {
-      position: absolute;
-      width: 130px; height: 130px;
-      opacity: 0.78;
-      pointer-events: none;
-    }
-    .corner-ornament.tl { top: 14px; left: 14px; }
-    .corner-ornament.tr { top: 14px; right: 14px; transform: scaleX(-1); }
-    .corner-ornament.bl { bottom: 14px; left: 14px; transform: scaleY(-1); }
-    .corner-ornament.br { bottom: 14px; right: 14px; transform: scale(-1, -1); }
-    @media (max-width: 760px) {
-      .corner-ornament { width: 86px; height: 86px; }
+      .preprint-id { position: static; text-align: left; margin-bottom: 22px; }
     }
 
     h1.paper-title {
       font-family: 'Cinzel', 'EB Garamond', serif;
-      font-weight: 600;
-      font-size: 38px;
-      line-height: 1.16;
-      letter-spacing: 0.005em;
-      color: #1a3324;
+      font-weight: 500;
+      font-size: 34px;
+      line-height: 1.18;
+      letter-spacing: 0.07em; /* elvish flowing tracking */
+      color: #f4eed4;
       text-align: center;
-      margin-bottom: 14px;
+      margin: 28px 0 10px;
+      /* chromatic aberration: magenta+cyan offsets, soft luminous halo */
+      text-shadow:
+        -1.5px 0 0 rgba(255,58,156,0.55),
+        1.5px 0 0 rgba(154,241,232,0.55),
+        0 0 24px rgba(255,255,255,0.10),
+        0 0 50px rgba(255,58,156,0.10);
     }
     .paper-subtitle {
       font-family: 'EB Garamond', serif;
       font-style: italic;
-      font-size: 18px;
-      color: #3d5b46;
+      font-size: 17px;
+      color: rgba(192,244,208,0.82);
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
+      text-shadow: 0 0 14px rgba(154,241,232,0.18);
     }
 
     .authors {
       text-align: center;
       font-family: 'EB Garamond', serif;
       font-size: 16px;
-      color: #2a4030;
-      margin-bottom: 8px;
+      color: rgba(245,242,230,0.86);
+      margin-bottom: 6px;
       line-height: 1.6;
     }
     .authors .a-name { white-space: nowrap; }
     .authors sup {
       font-size: 10px;
-      color: #3d7a55;
+      color: #aceeC0;
       margin-left: 2px;
     }
     .affiliations {
       text-align: center;
       font-family: 'EB Garamond', serif;
       font-style: italic;
-      font-size: 13.5px;
-      color: rgba(43,40,32,0.62);
+      font-size: 13px;
+      color: rgba(255,255,255,0.42);
       margin-bottom: 10px;
       line-height: 1.5;
     }
     .affiliations .aff-marker {
       font-style: normal;
-      color: #3d7a55;
+      color: #aceeC0;
       margin-right: 4px;
       font-size: 10px;
       vertical-align: super;
@@ -216,129 +260,135 @@
       text-align: center;
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: rgba(31,61,42,0.55);
-      margin-bottom: 28px;
+      color: rgba(172,238,192,0.50);
+      margin-bottom: 24px;
     }
 
-    .vine-divider {
-      display: block;
-      margin: 16px auto 36px;
-      width: 240px; height: 28px;
-      opacity: 0.55;
+    /* ── Synthwave horizon-sun divider (half-sun with grid bands + cyan rails) ── */
+    .rule-dot {
+      display: flex; align-items: center; justify-content: center;
+      margin: 22px auto 36px;
+      width: 340px; gap: 16px;
+    }
+    .rule-dot::before, .rule-dot::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(154,241,232,0.48), transparent);
+    }
+    .rule-dot .rd-glyph {
+      position: relative;
+      width: 38px; height: 19px;
+      background:
+        repeating-linear-gradient(0deg, transparent 0 2px, rgba(11,5,28,0.78) 2px 3px),
+        radial-gradient(ellipse at 50% 100%, #ffd0e4 0%, #ff86c4 30%, #ff3a9c 60%, #7a1f64 100%);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      box-shadow: 0 0 20px rgba(255,58,156,0.60), 0 0 42px rgba(255,58,156,0.28);
     }
 
     /* ── Abstract block ── */
     .abstract-label {
-      font-family: 'Cinzel', serif;
-      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
       letter-spacing: 0.32em;
       text-transform: uppercase;
-      color: #1f3d2a;
+      color: rgba(172,238,192,0.70);
       text-align: center;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .abstract {
-      margin: 0 6px 56px;
-      padding: 0 22px;
-      border-left: 2px solid rgba(61,122,85,0.32);
-      border-right: 2px solid rgba(61,122,85,0.16);
+      margin: 0 6px 52px;
+      padding: 4px 22px;
+      border-left: 1px solid rgba(255,58,156,0.36);
+      box-shadow: -10px 0 30px -10px rgba(255,58,156,0.18);
     }
     .abstract p {
+      font-family: 'EB Garamond', serif;
       font-size: 15.5px;
-      line-height: 1.7;
-      color: #2c2920;
+      line-height: 1.72;
+      color: rgba(245,242,230,0.84);
       margin-bottom: 14px;
       text-align: justify;
       hyphens: auto;
     }
     .abstract p:last-child { margin-bottom: 0; }
+    .abstract strong { color: #9af1e8; font-weight: 600; }
+    .abstract em { color: #f5e6b8; }
 
     /* ── Section typography ── */
-    section.body-section {
-      margin-bottom: 44px;
-    }
+    section.body-section { margin-bottom: 44px; }
     h2.sec-title {
       font-family: 'Cinzel', serif;
-      font-size: 19px;
-      font-weight: 600;
-      color: #1a3324;
-      letter-spacing: 0.02em;
-      margin-top: 36px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #f5e6b8; /* elvish pale gold */
+      letter-spacing: 0.07em;
+      margin-top: 40px;
       margin-bottom: 18px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(61,122,85,0.22);
-      display: flex; align-items: baseline; gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,58,156,0.22);
+      display: flex; align-items: baseline; gap: 14px;
+      text-shadow: 0 0 18px rgba(245,230,184,0.18);
     }
     h2.sec-title .sec-num {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: #3d7a55;
+      font-size: 12px;
+      color: #ff3a9c; /* synthwave magenta */
       letter-spacing: 0.04em;
       font-weight: 500;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    h2.sec-title .sec-num::before {
-      content: '';
-      display: inline-block;
-      width: 14px; height: 14px;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='M2 11 Q1 5 7 2 Q11 4 10 9 Q8 12 4 12 Q2.5 12 2 11 Z' fill='%233d7a55' opacity='0.85'/><path d='M3 11 Q5 8 8 5' stroke='%231f3d2a' stroke-width='0.4' fill='none' opacity='0.7'/><circle cx='10' cy='3' r='1.3' fill='%23f5b945' opacity='0.85'/></svg>");
-      background-size: contain;
-      background-repeat: no-repeat;
+      text-shadow: 0 0 10px rgba(255,58,156,0.55);
     }
     h3.subsec-title {
       font-family: 'Cinzel', serif;
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 500;
-      color: #2a4030;
-      letter-spacing: 0.04em;
+      color: #ece2c8;
+      letter-spacing: 0.07em;
       margin-top: 26px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       display: flex; align-items: baseline; gap: 10px;
     }
     h3.subsec-title .subsec-num {
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      color: #5fa085;
+      color: #ff86c4; /* lighter magenta */
       font-weight: 500;
+      text-shadow: 0 0 8px rgba(255,58,156,0.45);
     }
 
     p.body {
+      font-family: 'EB Garamond', serif;
       font-size: 16px;
-      line-height: 1.72;
-      color: #2c2920;
+      line-height: 1.74;
+      color: rgba(245,242,230,0.82);
       margin-bottom: 14px;
       text-align: justify;
       hyphens: auto;
-      font-feature-settings: "liga", "kern", "onum";
+      font-feature-settings: "liga", "kern";
     }
-    p.body em { color: #2a4030; }
-    p.body strong {
-      color: #1f3d2a;
-      font-weight: 600;
-    }
+    p.body em { color: #f5e6b8; }
+    p.body strong { color: #9af1e8; font-weight: 600; }
     p.body .term {
-      color: #1f3d2a;
+      color: #ff86c4;
       font-weight: 600;
-      background: linear-gradient(180deg, transparent 62%, rgba(172,238,192,0.42) 62%, rgba(172,238,192,0.42) 92%, transparent 92%);
-      padding: 0 2px;
+      text-shadow: 0 0 12px rgba(255,58,156,0.32);
     }
 
-    /* drop cap on the first paragraph of each major section — touched by sun */
+    /* drop cap — champagne ivory with chromatic aberration (synth-elven illuminated capital) */
     section.body-section > p.body.first::first-letter {
       font-family: 'Cinzel', 'EB Garamond', serif;
-      font-size: 52px;
+      font-size: 54px;
       float: left;
       line-height: 0.88;
-      padding: 6px 10px 0 0;
-      background: linear-gradient(135deg, #1f3d2a 0%, #3d7a55 55%, #a8782a 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
+      padding: 6px 12px 0 0;
+      color: #f5e6b8;
       font-weight: 600;
-      text-shadow: none;
+      text-shadow:
+        -2px 0 0 rgba(255,58,156,0.55),
+        2px 0 0 rgba(154,241,232,0.55),
+        0 0 22px rgba(255,58,156,0.20),
+        0 0 40px rgba(154,241,232,0.10);
     }
 
     ul.body-list {
@@ -347,67 +397,69 @@
       margin-bottom: 18px;
     }
     ul.body-list li {
+      font-family: 'EB Garamond', serif;
       font-size: 15.5px;
-      line-height: 1.7;
-      color: #2c2920;
-      padding-left: 26px;
+      line-height: 1.72;
+      color: rgba(245,242,230,0.82);
+      padding-left: 24px;
       position: relative;
       margin-bottom: 10px;
       text-align: justify;
     }
     ul.body-list li::before {
-      content: '❧';
-      position: absolute; left: 4px; top: 2px;
-      color: #3d7a55;
-      font-size: 13px;
+      content: '◆';
+      position: absolute; left: 4px; top: 7px;
+      color: #ff86c4;
+      font-size: 7px;
+      opacity: 0.92;
+      text-shadow: 0 0 6px rgba(255,58,156,0.55);
     }
-    ul.body-list li strong {
-      color: #1f3d2a;
-      font-weight: 600;
-    }
+    ul.body-list li strong { color: #9af1e8; font-weight: 600; }
 
     /* ── Footer / colophon ── */
     .paper-footer {
       margin-top: 56px;
       padding-top: 28px;
-      border-top: 1px solid rgba(61,122,85,0.22);
+      border-top: 1px solid rgba(255,58,156,0.18);
       text-align: center;
     }
     .cite-block {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10.5px;
       line-height: 1.7;
-      color: rgba(31,61,42,0.7);
-      background: rgba(61,122,85,0.06);
-      border-left: 2px solid rgba(61,122,85,0.32);
+      color: rgba(245,242,230,0.78);
+      background: rgba(154,241,232,0.04);
+      border-left: 2px solid rgba(255,58,156,0.42);
       padding: 14px 18px;
       margin: 24px auto 28px;
       max-width: 540px;
       text-align: left;
       border-radius: 2px;
+      box-shadow: -8px 0 24px -8px rgba(255,58,156,0.20);
     }
     .cite-block .cite-label {
       display: block;
       font-size: 9px; letter-spacing: 0.28em;
       text-transform: uppercase;
-      color: rgba(31,61,42,0.5);
+      color: rgba(154,241,232,0.72);
       margin-bottom: 6px;
     }
+    .cite-block em { color: rgba(245,242,230,0.86); }
     .colophon {
-      font-family: 'Goudy Bookletter 1911', 'EB Garamond', serif;
+      font-family: 'EB Garamond', serif;
       font-style: italic;
       font-size: 13px;
-      color: rgba(31,61,42,0.55);
+      color: rgba(255,255,255,0.42);
       margin-top: 18px;
     }
     .colophon a {
-      color: #3d7a55;
+      color: rgba(172,238,192,0.78);
       text-decoration: none;
-      border-bottom: 1px solid rgba(61,122,85,0.32);
+      border-bottom: 1px solid rgba(172,238,192,0.32);
     }
-    .colophon a:hover { color: #1f3d2a; border-bottom-color: #1f3d2a; }
+    .colophon a:hover { color: #aceeC0; border-bottom-color: #aceeC0; }
 
-    /* ── Floating side TOC (desktop only) ── */
+    /* ── Floating side TOC (true original) ── */
     #toc {
       position: fixed; top: 50%; right: 32px;
       transform: translateY(-50%);
@@ -437,6 +489,96 @@
     #toc .toc-row.active { color: rgba(192,244,208,0.85); }
     #toc .toc-row .toc-num { opacity: 0.55; min-width: 14px; }
     @media (max-width: 1180px) { #toc { display: none; } }
+
+    /* ── Admin panel (paper controls) ── */
+    #admin-panel {
+      position: fixed; bottom: 18px; left: 18px;
+      z-index: 40;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 12px 14px;
+      min-width: 240px;
+      background: rgba(11,5,28,0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(154,241,232,0.20);
+      border-radius: 6px;
+      display: flex; flex-direction: column; gap: 10px;
+      user-select: none;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55), 0 0 30px rgba(255,58,156,0.08);
+    }
+    #admin-panel .ap-header {
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(154,241,232,0.78);
+      font-size: 8.5px; letter-spacing: 0.30em; text-transform: uppercase;
+    }
+    #admin-panel .ap-header::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: #9af1e8; box-shadow: 0 0 6px #9af1e8;
+    }
+    #admin-panel .ap-row {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    #admin-panel .ap-label {
+      font-size: 8.5px; letter-spacing: 0.26em; text-transform: uppercase;
+      color: rgba(245,230,200,0.55);
+    }
+    #admin-panel .ap-control {
+      display: flex; align-items: center; gap: 9px;
+    }
+    #admin-panel input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none; appearance: none;
+      height: 2px; background: rgba(154,241,232,0.20);
+      border-radius: 2px; outline: none; cursor: pointer;
+    }
+    #admin-panel input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: #9af1e8;
+      box-shadow: 0 0 8px rgba(154,241,232,0.65);
+      cursor: pointer;
+    }
+    #admin-panel input[type="range"]::-moz-range-thumb {
+      width: 11px; height: 11px; border-radius: 50%; border: none;
+      background: #9af1e8;
+      box-shadow: 0 0 8px rgba(154,241,232,0.65);
+      cursor: pointer;
+    }
+    #admin-panel .ap-value {
+      font-size: 10px; letter-spacing: 0.10em;
+      color: rgba(245,230,200,0.78); min-width: 32px; text-align: right;
+    }
+    #admin-panel .ap-segments {
+      display: flex; gap: 4px;
+    }
+    #admin-panel .ap-seg {
+      flex: 1;
+      padding: 5px 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(154,241,232,0.18);
+      color: rgba(236,230,212,0.55);
+      font-family: inherit;
+      font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase;
+      cursor: pointer; border-radius: 3px;
+      transition: all 0.15s;
+    }
+    #admin-panel .ap-seg:hover {
+      color: rgba(154,241,232,0.85);
+      border-color: rgba(154,241,232,0.35);
+    }
+    #admin-panel .ap-seg.active {
+      background: rgba(255,58,156,0.14);
+      border-color: rgba(255,58,156,0.55);
+      color: #ff86c4;
+      box-shadow: 0 0 14px rgba(255,58,156,0.30);
+    }
+    #admin-panel .ap-hint {
+      font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(245,230,200,0.35);
+      padding-top: 4px;
+      border-top: 1px solid rgba(154,241,232,0.10);
+    }
+    @media (max-width: 1180px) { #admin-panel { display: none; } }
 
     /* Scroll progress bar */
     #progress {
@@ -482,88 +624,17 @@
   </nav>
 
   <article id="paper">
-    <!-- botanical corner ornaments (top-left is the base; tr/bl/br flip via CSS) -->
-    <svg class="corner-ornament tl" viewBox="0 0 130 130" fill="none" aria-hidden="true">
-      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
-        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
-        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
-        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
-      </g>
-      <g fill="#5fa085" opacity="0.78">
-        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
-        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
-        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
-        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
-      </g>
-      <g fill="#f5b945" opacity="0.78">
-        <circle cx="66" cy="6" r="1.8"/>
-        <circle cx="24" cy="28" r="1.4"/>
-      </g>
-      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
-        <path d="M6 76 Q2 80 4 86"/>
-      </g>
-    </svg>
-    <svg class="corner-ornament tr" viewBox="0 0 130 130" fill="none" aria-hidden="true">
-      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
-        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
-        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
-        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
-      </g>
-      <g fill="#5fa085" opacity="0.78">
-        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
-        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
-        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
-        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
-      </g>
-      <g fill="#f5b945" opacity="0.78">
-        <circle cx="66" cy="6" r="1.8"/>
-        <circle cx="24" cy="28" r="1.4"/>
-      </g>
-      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
-        <path d="M6 76 Q2 80 4 86"/>
-      </g>
-    </svg>
-    <svg class="corner-ornament bl" viewBox="0 0 130 130" fill="none" aria-hidden="true">
-      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
-        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
-        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
-        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
-      </g>
-      <g fill="#5fa085" opacity="0.78">
-        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
-        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
-        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
-        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
-      </g>
-      <g fill="#f5b945" opacity="0.78">
-        <circle cx="66" cy="6" r="1.8"/>
-        <circle cx="24" cy="28" r="1.4"/>
-      </g>
-      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
-        <path d="M6 76 Q2 80 4 86"/>
-      </g>
-    </svg>
-    <svg class="corner-ornament br" viewBox="0 0 130 130" fill="none" aria-hidden="true">
-      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
-        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
-        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
-        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
-      </g>
-      <g fill="#5fa085" opacity="0.78">
-        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
-        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
-        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
-        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
-      </g>
-      <g fill="#f5b945" opacity="0.78">
-        <circle cx="66" cy="6" r="1.8"/>
-        <circle cx="24" cy="28" r="1.4"/>
-      </g>
-      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
-        <path d="M6 76 Q2 80 4 86"/>
-      </g>
-    </svg>
+    <!-- resize handles (edges + corners) -->
+    <div class="resize-handle top"    data-dir="n"  aria-hidden="true"></div>
+    <div class="resize-handle bottom" data-dir="s"  aria-hidden="true"></div>
+    <div class="resize-handle left"   data-dir="w"  aria-hidden="true"></div>
+    <div class="resize-handle right"  data-dir="e"  aria-hidden="true"></div>
+    <div class="resize-handle tl"     data-dir="nw" aria-hidden="true"></div>
+    <div class="resize-handle tr"     data-dir="ne" aria-hidden="true"></div>
+    <div class="resize-handle bl"     data-dir="sw" aria-hidden="true"></div>
+    <div class="resize-handle br"     data-dir="se" aria-hidden="true"></div>
 
+    <div id="paper-content">
     <!-- arxiv-style preprint id -->
     <div class="preprint-id">
       <span class="pid-line pid-class">datahub.lat : 2026.01</span>
@@ -571,110 +642,19 @@
       <span class="pid-line">working paper · v1</span>
     </div>
 
-    <!-- solarpunk sun ornament — disk, rays, botanical cradle -->
-    <svg class="sun-ornament" viewBox="0 0 108 108" fill="none" aria-hidden="true">
-      <defs>
-        <radialGradient id="sun-core" cx="50%" cy="50%" r="50%">
-          <stop offset="0%"  stop-color="#fff0c0"/>
-          <stop offset="50%" stop-color="#f5b945"/>
-          <stop offset="100%" stop-color="#c9831f"/>
-        </radialGradient>
-        <radialGradient id="sun-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%"  stop-color="#f5b945" stop-opacity="0.45"/>
-          <stop offset="60%" stop-color="#f5b945" stop-opacity="0.10"/>
-          <stop offset="100%" stop-color="#f5b945" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <!-- outer warm glow -->
-      <circle cx="54" cy="50" r="44" fill="url(#sun-glow)"/>
-      <!-- long rays -->
-      <g stroke="#c9831f" stroke-width="1.3" stroke-linecap="round" opacity="0.88">
-        <line x1="54" y1="6"  x2="54" y2="16"/>
-        <line x1="54" y1="84" x2="54" y2="94"/>
-        <line x1="6"  y1="50" x2="16" y2="50"/>
-        <line x1="92" y1="50" x2="102" y2="50"/>
-        <line x1="20" y1="16" x2="27" y2="23"/>
-        <line x1="81" y1="77" x2="88" y2="84"/>
-        <line x1="88" y1="16" x2="81" y2="23"/>
-        <line x1="20" y1="84" x2="27" y2="77"/>
-      </g>
-      <!-- short rays between -->
-      <g stroke="#d99428" stroke-width="1" stroke-linecap="round" opacity="0.55">
-        <line x1="37" y1="9"  x2="39" y2="17"/>
-        <line x1="71" y1="9"  x2="69" y2="17"/>
-        <line x1="9"  y1="33" x2="17" y2="35"/>
-        <line x1="9"  y1="67" x2="17" y2="65"/>
-        <line x1="99" y1="33" x2="91" y2="35"/>
-        <line x1="99" y1="67" x2="91" y2="65"/>
-        <line x1="37" y1="91" x2="39" y2="83"/>
-        <line x1="71" y1="91" x2="69" y2="83"/>
-      </g>
-      <!-- sun disk -->
-      <circle cx="54" cy="50" r="15" fill="url(#sun-core)"/>
-      <!-- inner highlight -->
-      <circle cx="49" cy="45" r="4" fill="#fff5d0" opacity="0.6"/>
-      <!-- botanical cradle: stem + leaves + tiny bud -->
-      <g fill="none" stroke="#3d7a55" stroke-width="1.1" stroke-linecap="round" opacity="0.85">
-        <path d="M30 76 Q42 86 54 84 Q66 86 78 76"/>
-        <path d="M54 84 L54 96"/>
-      </g>
-      <g fill="#5fa085" opacity="0.85">
-        <path d="M30 76 Q22 72 22 64 Q30 66 33 74 Z"/>
-        <path d="M78 76 Q86 72 86 64 Q78 66 75 74 Z"/>
-        <ellipse cx="44" cy="83" rx="5" ry="2" transform="rotate(-15 44 83)"/>
-        <ellipse cx="64" cy="83" rx="5" ry="2" transform="rotate(15 64 83)"/>
-      </g>
-      <g fill="#f5b945" opacity="0.85">
-        <circle cx="54" cy="97" r="2"/>
-      </g>
-    </svg>
-
     <h1 class="paper-title">The Data Hub</h1>
     <p class="paper-subtitle">An Open Dataset Layer for AI in Latin America</p>
 
     <div class="authors">
-      <span class="a-name">Mauro<sup>†</sup></span> · <span class="a-name">Marian<sup>†</sup></span> · <span class="a-name">Francis<sup>†</sup></span> · <span class="a-name">Kenn<sup>†</sup></span> · <span class="a-name">Francis Perelman<sup>‡</sup></span>
+      <span class="a-name">Marian Basti<sup>†</sup></span> · <span class="a-name">Mauro Ibañez<sup>†</sup></span> · <span class="a-name">Kenn Bro<sup>†</sup></span> · <span class="a-name">Francis F. Daniel<sup>†</sup></span> · <span class="a-name">Francis Perelman<sup>‡</sup></span>
     </div>
     <div class="affiliations">
       <span class="aff-marker">†</span>SURUS Team &nbsp;·&nbsp; <span class="aff-marker">‡</span>Independent
     </div>
     <div class="paper-date">18 June 2026 · Buenos Aires</div>
 
-    <!-- vine divider — richer botanical -->
-    <svg class="vine-divider" viewBox="0 0 320 36" fill="none" aria-hidden="true">
-      <!-- main stem -->
-      <path d="M0 18 Q80 4 160 18 T320 18" stroke="#3d7a55" stroke-width="1" fill="none" opacity="0.72"/>
-      <!-- central flower with golden heart -->
-      <g transform="translate(160 18)">
-        <g fill="#3d7a55" opacity="0.82">
-          <path d="M-2 0 Q-7 -7 0 -11 Q7 -7 2 0 Z"/>
-          <path d="M2 0 Q7 7 0 11 Q-7 7 -2 0 Z"/>
-          <path d="M0 -2 Q-8 -3 -10 3 Q-6 5 -2 1 Z"/>
-          <path d="M0 2 Q8 3 10 -3 Q6 -5 2 -1 Z"/>
-        </g>
-        <circle r="2" fill="#f5b945" opacity="0.92"/>
-        <circle r="0.9" fill="#fff0c0" opacity="0.85"/>
-      </g>
-      <!-- side leaves -->
-      <g fill="#5fa085" opacity="0.72">
-        <ellipse cx="40" cy="22" rx="4.5" ry="1.7" transform="rotate(15 40 22)"/>
-        <ellipse cx="62" cy="10"  rx="6"   ry="2.2" transform="rotate(-22 62 10)"/>
-        <ellipse cx="100" cy="24" rx="5"   ry="1.9" transform="rotate(-10 100 24)"/>
-        <ellipse cx="220" cy="12" rx="5"   ry="1.9" transform="rotate(12 220 12)"/>
-        <ellipse cx="258" cy="22" rx="6"   ry="2.2" transform="rotate(22 258 22)"/>
-        <ellipse cx="280" cy="10" rx="4.5" ry="1.7" transform="rotate(-15 280 10)"/>
-      </g>
-      <!-- small berries -->
-      <g fill="#f5b945" opacity="0.78">
-        <circle cx="84"  cy="18" r="1.6"/>
-        <circle cx="236" cy="18" r="1.6"/>
-      </g>
-      <!-- tendrils curling at the ends -->
-      <g stroke="#5fa085" stroke-width="0.7" fill="none" opacity="0.55" stroke-linecap="round">
-        <path d="M28 18 Q22 13 26 8"/>
-        <path d="M292 18 Q298 13 294 8"/>
-      </g>
-    </svg>
+    <!-- thin mint rule with centered dot -->
+    <div class="rule-dot" aria-hidden="true"><span class="rd-glyph"></span></div>
 
     <!-- ABSTRACT -->
     <section id="abstract">
@@ -851,59 +831,56 @@
 
     <!-- FOOTER -->
     <footer class="paper-footer">
-      <svg class="vine-divider" viewBox="0 0 320 36" fill="none" aria-hidden="true">
-        <!-- mirrored curve -->
-        <path d="M0 18 Q80 32 160 18 T320 18" stroke="#3d7a55" stroke-width="1" fill="none" opacity="0.72"/>
-        <g transform="translate(160 18)">
-          <g fill="#3d7a55" opacity="0.82">
-            <path d="M-2 0 Q-7 -7 0 -11 Q7 -7 2 0 Z"/>
-            <path d="M2 0 Q7 7 0 11 Q-7 7 -2 0 Z"/>
-            <path d="M0 -2 Q-8 -3 -10 3 Q-6 5 -2 1 Z"/>
-            <path d="M0 2 Q8 3 10 -3 Q6 -5 2 -1 Z"/>
-          </g>
-          <circle r="2" fill="#f5b945" opacity="0.92"/>
-          <circle r="0.9" fill="#fff0c0" opacity="0.85"/>
-        </g>
-        <g fill="#5fa085" opacity="0.72">
-          <ellipse cx="40" cy="14"  rx="4.5" ry="1.7" transform="rotate(-15 40 14)"/>
-          <ellipse cx="62" cy="26"  rx="6"   ry="2.2" transform="rotate(22 62 26)"/>
-          <ellipse cx="100" cy="12" rx="5"   ry="1.9" transform="rotate(10 100 12)"/>
-          <ellipse cx="220" cy="24" rx="5"   ry="1.9" transform="rotate(-12 220 24)"/>
-          <ellipse cx="258" cy="14" rx="6"   ry="2.2" transform="rotate(-22 258 14)"/>
-          <ellipse cx="280" cy="26" rx="4.5" ry="1.7" transform="rotate(15 280 26)"/>
-        </g>
-        <g fill="#f5b945" opacity="0.78">
-          <circle cx="84"  cy="18" r="1.6"/>
-          <circle cx="236" cy="18" r="1.6"/>
-        </g>
-        <g stroke="#5fa085" stroke-width="0.7" fill="none" opacity="0.55" stroke-linecap="round">
-          <path d="M28 18 Q22 23 26 28"/>
-          <path d="M292 18 Q298 23 294 28"/>
-        </g>
-      </svg>
+      <div class="rule-dot" aria-hidden="true"><span class="rd-glyph"></span></div>
 
       <div class="cite-block">
         <span class="cite-label">cite as</span>
-SURUS Team &amp; F. Perelman (2026). <em>The Data Hub: An Open Dataset Layer for AI in Latin America.</em> Working paper, datahub.lat:2026.01. Buenos Aires.
+SURUS Team &amp; F. Perelman (2026). <em>On the missing data layer and a potential solution.</em> Working paper, datahub.lat:2026.01. Buenos Aires.
       </div>
 
       <div class="colophon">
         Set in EB Garamond &amp; Cinzel · Composed in Buenos Aires · <a href="/">return to the hub →</a>
       </div>
     </footer>
+    </div><!-- /#paper-content -->
   </article>
 
+  <div id="admin-panel" aria-label="Paper controls">
+    <div class="ap-header">paper · controls</div>
+
+    <div class="ap-row">
+      <span class="ap-label">translucency</span>
+      <div class="ap-control">
+        <input type="range" id="ap-translucency" min="40" max="95" step="1" value="80">
+        <span class="ap-value" id="ap-translucency-v">0.80</span>
+      </div>
+    </div>
+
+    <div class="ap-row">
+      <span class="ap-label">header</span>
+      <div class="ap-segments">
+        <button class="ap-seg active" data-density="full"    type="button">full</button>
+        <button class="ap-seg"        data-density="compact" type="button">compact</button>
+        <button class="ap-seg"        data-density="min"     type="button">min</button>
+      </div>
+    </div>
+
+    <div class="ap-hint">drag panel edges to resize</div>
+  </div>
+
   <script>
+    var paper = document.getElementById('paper');
+    var content = document.getElementById('paper-content');
+
     // ── scroll progress bar ──
     (function () {
       var bar = document.getElementById('progress-bar');
       function tick() {
-        var h = document.documentElement;
-        var max = h.scrollHeight - h.clientHeight;
-        var pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+        var max = content.scrollHeight - content.clientHeight;
+        var pct = max > 0 ? (content.scrollTop / max) * 100 : 0;
         bar.style.width = pct + '%';
       }
-      window.addEventListener('scroll', tick, { passive: true });
+      content.addEventListener('scroll', tick, { passive: true });
       window.addEventListener('resize', tick);
       tick();
     })();
@@ -918,7 +895,7 @@ SURUS Team &amp; F. Perelman (2026). <em>The Data Hub: An Open Dataset Layer for
       if (!sections.length) return;
 
       function update() {
-        var y = window.scrollY + window.innerHeight * 0.35;
+        var y = content.scrollTop + content.clientHeight * 0.35;
         var active = sections[0];
         for (var i = 0; i < sections.length; i++) {
           if (sections[i].el.offsetTop <= y) active = sections[i];
@@ -926,7 +903,7 @@ SURUS Team &amp; F. Perelman (2026). <em>The Data Hub: An Open Dataset Layer for
         rows.forEach(function (r) { r.classList.remove('active'); });
         active.row.classList.add('active');
       }
-      window.addEventListener('scroll', update, { passive: true });
+      content.addEventListener('scroll', update, { passive: true });
       window.addEventListener('resize', update);
       update();
     })();
@@ -938,10 +915,116 @@ SURUS Team &amp; F. Perelman (2026). <em>The Data Hub: An Open Dataset Layer for
         var el = document.getElementById(id);
         if (!el) return;
         e.preventDefault();
-        var top = el.getBoundingClientRect().top + window.scrollY - 60;
-        window.scrollTo({ top: top, behavior: 'smooth' });
+        var top = el.offsetTop - 40;
+        content.scrollTo({ top: top, behavior: 'smooth' });
       });
     });
+
+    // ── translucency slider ──
+    (function () {
+      var slider = document.getElementById('ap-translucency');
+      var label = document.getElementById('ap-translucency-v');
+      function set(v) {
+        var a = v / 100;
+        paper.style.setProperty('--panel-alpha', a);
+        label.textContent = a.toFixed(2);
+        try { localStorage.setItem('paper.alpha', String(v)); } catch (e) {}
+      }
+      slider.addEventListener('input', function () { set(slider.value); });
+      try {
+        var s = parseInt(localStorage.getItem('paper.alpha'), 10);
+        if (s >= 40 && s <= 95) { slider.value = s; }
+      } catch (e) {}
+      set(slider.value);
+    })();
+
+    // ── header density segments ──
+    (function () {
+      var segs = document.querySelectorAll('#admin-panel .ap-seg');
+      function set(d) {
+        paper.classList.remove('density-full', 'density-compact', 'density-min');
+        paper.classList.add('density-' + d);
+        segs.forEach(function (s) { s.classList.toggle('active', s.dataset.density === d); });
+        try { localStorage.setItem('paper.density', d); } catch (e) {}
+      }
+      segs.forEach(function (s) {
+        s.addEventListener('click', function () { set(s.dataset.density); });
+      });
+      var saved = 'full';
+      try {
+        var d = localStorage.getItem('paper.density');
+        if (d === 'full' || d === 'compact' || d === 'min') saved = d;
+      } catch (e) {}
+      set(saved);
+    })();
+
+    // ── resize handles (drag from any edge or corner) ──
+    (function () {
+      var handles = paper.querySelectorAll('.resize-handle');
+      var state = null;
+      function lockPx() {
+        var r = paper.getBoundingClientRect();
+        paper.style.left = r.left + 'px';
+        paper.style.top = r.top + 'px';
+        paper.style.right = 'auto';
+        paper.style.bottom = 'auto';
+        paper.style.transform = 'none';
+        paper.style.width = r.width + 'px';
+        paper.style.height = r.height + 'px';
+        paper.style.maxWidth = 'none';
+      }
+      function start(e, dir) {
+        e.preventDefault();
+        lockPx();
+        var r = paper.getBoundingClientRect();
+        state = {
+          dir: dir,
+          x0: e.clientX, y0: e.clientY,
+          L: r.left, T: r.top, W: r.width, H: r.height,
+        };
+        document.body.classList.add('resizing');
+      }
+      function move(e) {
+        if (!state) return;
+        var dx = e.clientX - state.x0, dy = e.clientY - state.y0;
+        var MIN_W = 360, MIN_H = 280;
+        var L = state.L, T = state.T, W = state.W, H = state.H;
+        if (state.dir.indexOf('e') >= 0) {
+          W = Math.max(MIN_W, state.W + dx);
+          W = Math.min(W, window.innerWidth - L - 8);
+        }
+        if (state.dir.indexOf('w') >= 0) {
+          var nW = Math.max(MIN_W, state.W - dx);
+          L = state.L + (state.W - nW);
+          L = Math.max(8, L);
+          W = nW;
+        }
+        if (state.dir.indexOf('s') >= 0) {
+          H = Math.max(MIN_H, state.H + dy);
+          H = Math.min(H, window.innerHeight - T - 8);
+        }
+        if (state.dir.indexOf('n') >= 0) {
+          var nH = Math.max(MIN_H, state.H - dy);
+          T = state.T + (state.H - nH);
+          T = Math.max(8, T);
+          H = nH;
+        }
+        paper.style.left = L + 'px';
+        paper.style.top = T + 'px';
+        paper.style.width = W + 'px';
+        paper.style.height = H + 'px';
+      }
+      function end() {
+        if (!state) return;
+        state = null;
+        document.body.classList.remove('resizing');
+      }
+      handles.forEach(function (h) {
+        h.addEventListener('mousedown', function (e) { start(e, h.dataset.dir); });
+      });
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', end);
+    })();
   </script>
 </body>
 </html>
