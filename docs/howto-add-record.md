@@ -41,15 +41,18 @@ without a third-party page to scrape.
 ### Step 1: Read the current vocabularies
 
 Open [`data.json`](../data.json). The top-level keys
-(`tasks_supported`, `input_types`, `domains`, `languages`,
-`ai_systems`, `architectures`, `licenses`,
-`contributing_organizations`) are the **only** legal values for the
-matching record fields. Pick from these lists first.
+(`tasks_supported`, `input_type`, `output_type`, `domains`, `languages`,
+`licenses`, `contributing_organizations`) are the **only** legal values
+for the matching record fields. Pick from these lists first.
 
 If your record needs a value that isn't present — a new language code,
-a new license, an architecture descriptor that doesn't exist yet — add
-it to the corresponding vocabulary list **before** adding the record.
-Vocabulary additions are part of the same PR.
+a new license, a new task verb — add it to the corresponding vocabulary
+list **before** adding the record. Vocabulary additions are part of the
+same PR.
+
+Every record describes a **dataset**. There is no `ai_system`,
+`architecture`, or `params` field. If your contribution is a model card
+or an agent, this registry is not the right place for it.
 
 ### Step 2: Pick the next id
 
@@ -64,15 +67,13 @@ Use this skeleton:
 {
   "id": <next id>,
   "task": "<verb from tasks_supported>",
-  "input_type": "<medium from input_types>",
+  "input_type": "<medium from input_type>",
+  "output_type": "<medium from output_type>",
   "domain": "<knowledge grouping from domains>",
-  "language": "<LATAM-first tag from languages>",
-  "ai_system": "<kind from ai_systems>",
-  "architecture": "<descriptor from architectures>",
+  "languages": ["<LATAM-first tag>", "..."],
   "organization": "<name from contributing_organizations>",
   "license": "<short form from licenses>",
-  "model": "<display name of the artifact>",
-  "params": "<count as string, or N/A for datasets>",
+  "model": "<display name of the dataset>",
   "year": <first-release year as int>,
   "source_url": "<canonical URL, tracking params stripped>",
   "description": "<2-3 dense factual sentences, ~250-450 chars>"
@@ -80,13 +81,17 @@ Use this skeleton:
 ```
 
 Field-by-field guidance lives in [reference-schema.md](./reference-schema.md#record-shape).
-The two most-missed nuances:
+The three most-missed nuances:
 
 - **`organization` is the upstream source, not the republisher.** For
   a HuggingFace mirror, that's the original corpus owner named in the
   README, not the HF account holder.
-- **`language` uses regional codes.** Argentinian Spanish corpora are
-  `es-AR`, not `es`. There is no plain `es` in the vocabulary.
+- **`languages` is an array.** List every variant the source page names
+  (e.g. PRESEEA's 11 countries → 11 country codes). Use the coarse
+  `["es"]` or `["pt"]` only when the source mentions Spanish/Portuguese
+  but doesn't resolve sub-variants.
+- **`Multilingual` means multiple *different* languages**, not multiple
+  Spanish variants. A pan-Hispanic corpus is `["es"]` or a list of country codes.
 
 ### Step 4: Append the record
 
@@ -147,7 +152,7 @@ reviewer can see what's new beyond the record itself. Use this shape:
 ```markdown
 **Source**: <source_url>
 **Artifact**: <model>  ·  **Organization**: <organization>  ·  **Year**: <year>
-**Inferred fields**: task=<task>, input_type=<input_type>, domain=<domain>, language=<language>, ai_system=<ai_system>
+**Inferred fields**: task=<task>, input_type=<input_type>, output_type=<output_type>, domain=<domain>, languages=<languages>
 **Vocabulary additions**: <list each new entry, or "none">
 ```
 
@@ -184,9 +189,8 @@ The skill is wired to:
 The skill shows the full JSON before committing. Sanity-check the four
 fields where automated extraction sometimes drifts:
 
-- `language` — is the regional code right? `es-AR` not `es`, `pt-BR`
-  not `pt`. If the dataset's region is mentioned in the README, the
-  skill should have picked it up.
+- `languages` — does the array list every variant the source page names?
+  Coarse `["es"]` is for when sub-variants are genuinely unstated.
 - `organization` — is this the **upstream source**, not the HF account
   holder? For `ylacombe/google-argentinian-spanish` the answer is
   `Google`, not `ylacombe`.
@@ -219,23 +223,26 @@ asks which subset to import. `paper` and `space` items are skipped
 automatically. You can pick "all" or a specific subset; each chosen item
 becomes its own record.
 
-## Path C — non-HuggingFace URL
+## Path C — non-HuggingFace dataset URL
 
-For arxiv, GitHub, or HF model URLs (rare), the same skill is available
-with adjusted field mappings — see the skill's
-[SKILL.md](../.claude/skills/url-to-dataset-record/SKILL.md) for the
-edge-case rules. For everything else, fall back to Path A and extract
-the fields by hand. The validator's behavior is identical regardless of
-how the record was authored.
+For Mozilla Data Collective and other non-HF dataset URLs, the skill
+falls back to the `/scrape` skill (or `WebFetch` as a last resort) to
+pull metadata from the page. The mapping into the registry schema is
+the same as Path B. See the skill's
+[SKILL.md](../.claude/skills/url-to-dataset-record/SKILL.md) for details.
+
+For model cards, agent pages, or benchmark leaderboards — refuse. The
+registry is datasets-only.
 
 ## Common pitfalls
 
 | Mistake | Fix |
 | --- | --- |
-| Used `es` or `pt` | Use the regional code (`es-AR`, `pt-BR`). If the region is unknown, ask the source or use `Multilingual`. |
+| Collapsed known sub-variants into `["es"]` | List the specific country codes the source names. Coarse `es` is for genuinely-unstated resolution. |
+| Used `Multilingual` for Spanish-across-many-countries | `Multilingual` means multiple *different* languages. Use `["es"]` or list country codes. |
 | Used `ylacombe` as `organization` for a Google corpus mirror | Use the upstream source (`Google`). The HF account holder is not the organization. |
-| Wrote `task` as a noun (`"Speech Recognition"`) | Use a verb (`transcribe`). The action goes in `task`; the medium goes in `input_type`. |
-| Added a new architecture descriptor without listing it in the PR body | Edit the PR body to list it. The reviewer needs to see vocabulary additions. |
+| Wrote `task` as a noun (`"Speech Recognition"`) | Use a verb (`transcribe`). The action goes in `task`; the medium goes in `input_type`/`output_type`. |
+| Added an `ai_system`, `architecture`, or `params` field | Drop them. They're not in the schema anymore. |
 | Validator says "duplicate id" | The id collided with an existing record. Use `max(records[].id) + 1`. |
 | Validator says "missing logo key" for an organization | Add `"logo": null` even when there's no logo. The key is required; its value can be null. |
 | Validator says `"ontology" key must be removed` | Old schema. Promote the nested vocabularies to top-level keys. |

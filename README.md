@@ -6,15 +6,9 @@ Open source. Open data. Anyone can add a record.
 
 ## What lives here
 
-The "database" is a single file: [`data.json`](./data.json). It catalogs five kinds of AI systems:
+The "database" is a single file: [`data.json`](./data.json). It catalogs **datasets** — corpora used to train or evaluate AI systems, especially LATAM-language data.
 
-- **`model`** — pretrained models (LLMs, encoders, speech models, vision)
-- **`dataset`** — training and evaluation corpora, especially LATAM-language data
-- **`agent`** — agentic systems with tools and memory
-- **`workflow`** — multi-step orchestrations
-- **`node`** — reusable building blocks
-
-Records are indexed by the verb they perform (`classify`, `transcribe`, `chat`, …), what they operate on (`text`, `audio`, `image`, …), the domain (`medical`, `legal`, `finance`, …), and the language. The frontend at [`datahub.html`](./datahub.html) is a searchable explorer with an animated hero and a machine-readable signal view.
+Records are indexed by the task they support (`transcribe`, …), the medium fed in (`audio`, `text`, `image`, …), the medium produced (`text`, `audio`, …), the domain (`general`, `medical`, `legal`, `finance`, …), and the language. The frontend at [`datahub.html`](./datahub.html) is a searchable explorer with an animated hero and a machine-readable signal view.
 
 ## Why LATAM-first
 
@@ -22,8 +16,9 @@ The `languages` vocabulary is the most visible signal of this stance:
 
 - One Spanish variant per LATAM country (`es-AR`, `es-BO`, `es-CL`, `es-CO`, `es-MX`, `es-PE`, `es-UY`, `es-VE`, …)
 - Brazilian Portuguese (`pt-BR`)
+- Coarse fallbacks (`es`, `pt`) for datasets where the source page doesn't resolve sub-variants — a record reading `["es"]` means "Spanish, breakdown not stated"; `["es-AR", "es-MX"]` means "specifically Argentinian and Mexican Spanish"
 - The major indigenous languages of the region (`qu` Quechua, `gn` Guarani, `ay` Aymara)
-- Utility values: `en`, `Multilingual`, `N/A`
+- Utility values: `en`, `Multilingual` (multiple *different* languages, not multiple Spanish variants), `N/A`
 
 European Spanish and European Portuguese are intentionally **out of scope**. If a system was built for or evaluated on a LATAM variant, it belongs here. If you want to add an indigenous language we missed, open a PR — the vocabulary is meant to grow.
 
@@ -44,55 +39,50 @@ No build step, no `node_modules`, no bundler. The page bootstraps React, Babel, 
 ```jsonc
 {
   // primary navigational axes
-  "tasks_supported": ["classify", "extract", "transcribe", "summarize", "retrieve_information", "reason", "chat", "voice"],
-  "input_types":     ["text", "image", "audio", "video", "code"],
+  "tasks_supported": ["transcribe", "..."],
+  "input_type":      ["audio", "text", "..."],   // medium fed in
+  "output_type":     ["text", "audio", "..."],   // medium produced
   "domains":         ["general", "medical", "legal", "finance"],
   "languages":       ["es-AR", "es-BO", "es-CL", "...", "pt-BR", "qu", "gn", "ay", "en", "Multilingual", "N/A"],
 
   // descriptive attribute vocabularies
-  "ai_systems":      ["model", "workflow", "agent", "node", "dataset"],
-  "architectures":   ["Transformer (Encoder)", "Transformer (Decoder)", "..."],
-  "licenses":        ["Apache 2.0", "MIT", "..."],
+  "licenses":        ["CC0", "CC-BY-SA 4.0", "GPL-3.0", "..."],
   "contributing_organizations": [
-    { "name": "Google", "logo": null }
+    { "name": "Mozilla Foundation", "logo": null }
   ],
 
   "records": [
     {
       "id": 1,
-      "task": "classify",            // must ∈ tasks_supported
-      "input_type": "text",          // must ∈ input_types
-      "domain": "general",           // must ∈ domains
-      "language": "en",              // must ∈ languages
-      "ai_system": "model",          // must ∈ ai_systems
-      "architecture": "Transformer (Encoder)",
-      "organization": "Google",      // must match a name in contributing_organizations
-      "license": "Apache 2.0",
-      "model": "BERT-large",
-      "params": "340M",
-      "year": 2019,
-      "source_url": "https://arxiv.org/abs/1810.04805",
-      "description": "Pre-trained deep bidirectional transformers…"
+      "task": "transcribe",            // must ∈ tasks_supported
+      "input_type": "audio",           // must ∈ input_type
+      "output_type": "text",           // must ∈ output_type
+      "domain": "general",             // must ∈ domains
+      "languages": ["es-AR"],          // array — every entry must ∈ languages
+      "organization": "Universidad Nacional de La Plata",  // must match contributing_organizations
+      "license": "CC-BY-NC-SA 4.0",
+      "model": "CordeBA",              // dataset's display name
+      "year": 2024,
+      "source_url": "https://huggingface.co/datasets/marianbasti/cordeba",
+      "description": "Spontaneous-speech corpus of informal conversations…"
     }
   ]
 }
 ```
 
-`task` is a verb (the action). `input_type` is what the action is performed on. `domain` is a knowledge grouping, not a technical bucket. Derived values come from the top-level lists, not from `records`: the hero stats are `domains.length` / `languages.length` / `contributing_organizations.length`. Add a record whose `task` is not yet in `tasks_supported` and the validator will tell you to add the verb to the list first.
+Every record is a dataset — that's the only kind. `task` is the verb the dataset trains or evaluates (the action). `input_type` is what the trained system consumes; `output_type` is what it produces. `domain` is a knowledge grouping, not a technical bucket. Derived values come from the top-level lists, not from `records`: the hero stats are `domains.length` / `languages.length` / `contributing_organizations.length`. Add a record whose `task` is not yet in `tasks_supported` and the validator will tell you to add the verb to the list first.
 
 ## Contribute a record
 
 We especially welcome:
 
 - **LATAM datasets** — corpora in any es-XX variant, pt-BR, or indigenous languages
-- **Models trained or fine-tuned on LATAM data**
-- **Agents and workflows built by LATAM teams or for LATAM use cases**
-- **Domain-specific work** in health, law, finance, and science from the region
+- **Domain-specific corpora** in health, law, finance, and related fields from the region
 
 Steps:
 
 1. Open [`data.json`](./data.json).
-2. If your new record uses a task, input_type, domain, language, architecture, license, or organization that doesn't exist yet, **add it to the corresponding top-level list first**.
+2. If your new record uses a task, input_type, output_type, domain, language, license, or organization that doesn't exist yet, **add it to the corresponding top-level list first**.
 3. Append the record to `records` with a new `id`.
 4. Run the validator:
    ```sh
@@ -101,7 +91,7 @@ Steps:
    It exits 0 on success. On any vocabulary miss it prints exactly which record, which field, and which vocabulary is involved.
 5. Open a PR following [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
-If you're adding a HuggingFace dataset and use Claude Code, the `url-to-dataset-record` skill will fetch the dataset card and draft the record for you.
+If you're adding a HuggingFace dataset or a Mozilla Data Collective entry and use Claude Code, the `url-to-dataset-record` skill will fetch the dataset card and draft the record for you.
 
 ### One-time hook setup
 

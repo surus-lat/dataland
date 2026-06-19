@@ -1,28 +1,18 @@
 {
   "tasks_supported": [
-    "classify",
-    "extract",
-    "transcribe",
-    "summarize",
-    "retrieve_information",
-    "reason",
-    "chat",
-    "voice"
+    "transcribe"
   ],
-  "input_types": [
-    "text",
-    "image",
-    "audio",
-    "video",
-    "code"
+  "input_type": [
+    "audio"
+  ],
+  "output_type": [
+    "text"
   ],
   "domains": [
-    "general",
-    "medical",
-    "legal",
-    "finance"
+    "general"
   ],
   "languages": [
+    "es",
     "es-AR",
     "es-BO",
     "es-CL",
@@ -42,6 +32,7 @@
     "es-SV",
     "es-UY",
     "es-VE",
+    "pt",
     "pt-BR",
     "qu",
     "gn",
@@ -50,183 +41,104 @@
     "Multilingual",
     "N/A"
   ],
-  "ai_systems": [
-    "model",
-    "workflow",
-    "agent",
-    "node",
-    "dataset"
-  ],
-  "architectures": [
-    "Audio + Text",
-    "Audio + Text (audiofolder)",
-    "Audio + Text (parquet)",
-    "Transformer (Encoder)",
-    "Transformer (Decoder)",
-    "Transformer (Seq2Seq)",
-    "Vision-Language"
-  ],
   "licenses": [
-    "Apache 2.0",
     "CC-BY-NC-ND 4.0",
     "CC-BY-NC-SA 4.0",
     "CC-BY-SA 4.0",
     "CC0",
-    "MIT",
-    "Proprietary"
+    "GPL-3.0"
   ],
   "contributing_organizations": [
     { "name": "Google", "logo": null },
     { "name": "Mozilla Foundation", "logo": null },
-    { "name": "OpenAI", "logo": null },
     { "name": "PRESEEA", "logo": null },
     { "name": "Universidad Nacional de La Plata", "logo": null },
-    { "name": "UW-Madison", "logo": null }
+    { "name": "VoxForge", "logo": null }
   ],
   "records": [
     {
       "id": 1,
-      "task": "classify",
-      "input_type": "text",
-      "domain": "general",
-      "language": "en",
-      "ai_system": "model",
-      "architecture": "Transformer (Encoder)",
-      "organization": "Google",
-      "license": "Apache 2.0",
-      "model": "BERT-large",
-      "params": "340M",
-      "year": 2019,
-      "source_url": "https://arxiv.org/abs/1810.04805",
-      "description": "Pre-trained deep bidirectional transformers for language understanding. Achieves state-of-the-art on GLUE, SQuAD v1.1 and v2.0 through task-specific fine-tuning from a single shared model."
-    },
-    {
-      "id": 2,
-      "task": "retrieve_information",
-      "input_type": "text",
-      "domain": "general",
-      "language": "Multilingual",
-      "ai_system": "agent",
-      "architecture": "Transformer (Decoder)",
-      "organization": "OpenAI",
-      "license": "Proprietary",
-      "model": "GPT-4",
-      "params": "Unknown",
-      "year": 2023,
-      "source_url": "https://arxiv.org/abs/2303.08774",
-      "description": "Large multimodal model accepting image and text inputs. Demonstrates human-level performance on professional and academic benchmarks, passing bar exams in the top percentile."
-    },
-    {
-      "id": 3,
       "task": "transcribe",
       "input_type": "audio",
+      "output_type": "text",
       "domain": "general",
-      "language": "Multilingual",
-      "ai_system": "workflow",
-      "architecture": "Transformer (Seq2Seq)",
-      "organization": "OpenAI",
-      "license": "MIT",
-      "model": "Whisper-large-v3",
-      "params": "1.55B",
-      "year": 2022,
-      "source_url": "https://arxiv.org/abs/2212.04356",
-      "description": "Trained on 680,000 hours of multilingual supervised web audio. Handles transcription and translation for 99 languages with high robustness to accents, background noise, and dialects."
-    },
-    {
-      "id": 4,
-      "task": "summarize",
-      "input_type": "text",
-      "domain": "general",
-      "language": "en",
-      "ai_system": "model",
-      "architecture": "Transformer (Seq2Seq)",
-      "organization": "Google",
-      "license": "Apache 2.0",
-      "model": "Pegasus-X",
-      "params": "568M",
-      "year": 2022,
-      "source_url": "https://arxiv.org/abs/2208.01625",
-      "description": "Extended PEGASUS for long documents via staggered block-local attention and global tokens. Efficiently handles up to 16,000 input tokens, outperforming prior long-range transformers on summarization."
-    },
-    {
-      "id": 5,
-      "task": "reason",
-      "input_type": "image",
-      "domain": "general",
-      "language": "en",
-      "ai_system": "agent",
-      "architecture": "Vision-Language",
-      "organization": "UW-Madison",
-      "license": "Apache 2.0",
-      "model": "LLaVA-1.6",
-      "params": "13B",
-      "year": 2024,
-      "source_url": "https://arxiv.org/abs/2310.03744",
-      "description": "Improved visual instruction tuning with higher resolution support (up to 4× tiles). Uses a CLIP ViT-L encoder and Vicuna language decoder connected via an MLP projection layer."
-    },
-    {
-      "id": 6,
-      "task": "transcribe",
-      "input_type": "audio",
-      "domain": "general",
-      "language": "Multilingual",
-      "ai_system": "dataset",
-      "architecture": "Audio + Text",
+      "languages": ["es-AR", "es-BO", "es-CL", "es-CO", "es-CU", "es-EC", "es-GT", "es-MX", "es-PE", "es-UY", "es-VE"],
       "organization": "PRESEEA",
       "license": "CC-BY-NC-ND 4.0",
       "model": "PRESEEA",
-      "params": "N/A",
       "year": 2021,
       "source_url": "https://huggingface.co/datasets/marianbasti/preseea",
-      "description": "Sociolinguistic corpus of semi-directed oral interviews recorded across cities in Spain and Latin America (Argentina, Chile, Mexico, Peru, Uruguay, Bolivia, Colombia, Venezuela, Ecuador, Cuba, Guatemala). Contains 644 interviews of 20–45 minutes each, pairing WAV/MP3 audio with enriched orthographic transcriptions, some XML-annotated for pauses, overlaps, and noise. Coordinated by the PRESEEA project at the Universidad de Alcalá."
+      "description": "Sociolinguistic corpus of semi-directed oral interviews recorded across cities in Spain and Latin America. Contains 644 interviews of 20–45 minutes each, pairing WAV/MP3 audio with enriched orthographic transcriptions, some XML-annotated for pauses, overlaps, and noise. Coordinated by the PRESEEA project at the Universidad de Alcalá, with explicit LATAM coverage in Argentina, Bolivia, Chile, Colombia, Cuba, Ecuador, Guatemala, Mexico, Peru, Uruguay, and Venezuela."
     },
     {
-      "id": 7,
+      "id": 2,
       "task": "transcribe",
       "input_type": "audio",
+      "output_type": "text",
       "domain": "general",
-      "language": "es-AR",
-      "ai_system": "dataset",
-      "architecture": "Audio + Text (audiofolder)",
+      "languages": ["es-AR"],
       "organization": "Universidad Nacional de La Plata",
       "license": "CC-BY-NC-SA 4.0",
       "model": "CordeBA",
-      "params": "N/A",
       "year": 2024,
       "source_url": "https://huggingface.co/datasets/marianbasti/cordeba",
       "description": "Spontaneous-speech corpus of informal, undirected conversations among speakers from Buenos Aires province, Argentina. The first version contains 24 oral recordings (participant mean age 29.74), pairing MP3 audio with orthographic transcriptions marked for orality cues — pauses, overlaps, and non-verbal semiotics. Recorded 2014–2019 and curated by the Grupo de Estudios Fonológicos at the Universidad Nacional de La Plata."
     },
     {
-      "id": 8,
+      "id": 3,
       "task": "transcribe",
       "input_type": "audio",
+      "output_type": "text",
       "domain": "general",
-      "language": "es-AR",
-      "ai_system": "dataset",
-      "architecture": "Audio + Text (parquet)",
+      "languages": ["es-AR"],
       "organization": "Google",
       "license": "CC-BY-SA 4.0",
       "model": "google-argentinian-spanish",
-      "params": "N/A",
       "year": 2020,
       "source_url": "https://huggingface.co/datasets/ylacombe/google-argentinian-spanish",
       "description": "Crowd-sourced read-speech corpus of Argentinian Spanish from Google — short utterances paired with transcripts, originally released to enable LATAM-targeted TTS and ASR research. Splits cover 3,921 female and 1,818 male recordings, packaged by the HF mirror into parquet shards for streaming."
     },
     {
-      "id": 9,
+      "id": 4,
       "task": "transcribe",
       "input_type": "audio",
+      "output_type": "text",
       "domain": "general",
-      "language": "Multilingual",
-      "ai_system": "dataset",
-      "architecture": "Audio + Text",
+      "languages": ["es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU", "es-DO", "es-EC", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA", "es-PE", "es-PR", "es-SV", "es-UY", "es-VE"],
       "organization": "Mozilla Foundation",
       "license": "CC0",
-      "model": "Common Voice Scripted Speech 25.0 - Spanish",
-      "params": "N/A",
+      "model": "Common Voice Scripted Speech 26.0 - Spanish",
       "year": 2026,
-      "source_url": "https://mozilladatacollective.com/datasets/cmn4z1n52000knv07h01532dd",
-      "description": "Mozilla Common Voice 25.0 read-speech corpus for Spanish — 1,678,430 crowd-sourced clips totaling 2,275 hours from 26,896 speakers, read from a 1.08M-sentence corpus. Self-reported accents are LATAM-dominant: Mexican (52.4%), plus Andean, Rioplatense, Caribbean, Central American, and Chilean, alongside a peninsular minority. Released CC0 with per-clip accent and variant columns enabling regional filtering."
+      "source_url": "https://mozilladatacollective.com/datasets/cmqim2spa00synr071fcp7av0",
+      "description": "Mozilla Common Voice 26.0 read-speech corpus for Spanish — 1,680,810 crowd-sourced MP3 clips totaling 2,278.66 hours from 26,940 speakers, read from a 1,087,461-sentence corpus. Self-reported accents span Mexican, Andean, Rioplatense, Caribbean, Central American, Chilean, Canary, and peninsular variants — pan-LATAM coverage. Released CC0 with per-clip accent and variant columns enabling regional filtering."
+    },
+    {
+      "id": 5,
+      "task": "transcribe",
+      "input_type": "audio",
+      "output_type": "text",
+      "domain": "general",
+      "languages": ["es"],
+      "organization": "Mozilla Foundation",
+      "license": "CC0",
+      "model": "Common Voice Spontaneous Speech 4.0 - Spanish",
+      "year": 2026,
+      "source_url": "https://mozilladatacollective.com/datasets/cmqi28y2v004imf076oh7e5zs",
+      "description": "Mozilla Common Voice 4.0 spontaneous-speech corpus for Spanish — 403 MP3 clips totaling 1.21 hours from 16 speakers, captured as free-form responses to prompts rather than scripted reading. Released CC0 to complement Common Voice's read-speech track with ASR training material that better reflects conversational delivery; only 37 clips are transcription-validated so far. Sub-variant coverage is not reported, so the language is tagged at the coarse es level."
+    },
+    {
+      "id": 6,
+      "task": "transcribe",
+      "input_type": "audio",
+      "output_type": "text",
+      "domain": "general",
+      "languages": ["es"],
+      "organization": "VoxForge",
+      "license": "GPL-3.0",
+      "model": "VoxForge - Spanish",
+      "year": 2026,
+      "source_url": "https://mozilladatacollective.com/datasets/cmp2ggvbx00lvmp07i0xqlntr",
+      "description": "VoxForge Spanish-language read-speech corpus — 23,537 utterances totaling 53 hours of audio from at least 483 volunteers, contributed since the project's launch to seed open-source ASR. Released GPL-3.0 as WAV with TSV transcripts; regional Spanish variants are present but not coded per-speaker, so the language is tagged at the coarse es level."
     }
   ]
 }

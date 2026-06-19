@@ -22,11 +22,10 @@ try {
 
 const VOCAB_KEYS = [
   'tasks_supported',
-  'input_types',
+  'input_type',
+  'output_type',
   'domains',
   'languages',
-  'ai_systems',
-  'architectures',
   'licenses',
 ];
 
@@ -63,26 +62,26 @@ const orgNames = new Set(
 
 const FIELD_TO_VOCAB = {
   task: 'tasks_supported',
-  input_type: 'input_types',
+  input_type: 'input_type',
+  output_type: 'output_type',
   domain: 'domains',
-  language: 'languages',
-  ai_system: 'ai_systems',
-  architecture: 'architectures',
   license: 'licenses',
+};
+
+const ARRAY_FIELD_TO_VOCAB = {
+  languages: 'languages',
 };
 
 const REQUIRED_FIELDS = [
   'id',
   'task',
   'input_type',
+  'output_type',
   'domain',
-  'language',
-  'ai_system',
-  'architecture',
+  'languages',
   'organization',
   'license',
   'model',
-  'params',
   'year',
   'source_url',
   'description',
@@ -112,6 +111,27 @@ for (const r of data.records) {
       fail(`${label}: ${field} "${value}" not in ${vocabKey} — add it to the list or change the record`);
     } else {
       used[vocabKey].add(value);
+    }
+  }
+
+  for (const [field, vocabKey] of Object.entries(ARRAY_FIELD_TO_VOCAB)) {
+    const values = r[field];
+    if (values === undefined) continue;
+    if (!Array.isArray(values)) {
+      fail(`${label}: ${field} must be an array of values from ${vocabKey}`);
+      continue;
+    }
+    if (values.length === 0) {
+      fail(`${label}: ${field} must not be empty`);
+      continue;
+    }
+    const vocab = data[vocabKey];
+    for (const v of values) {
+      if (!vocab.includes(v)) {
+        fail(`${label}: ${field} "${v}" not in ${vocabKey} — add it to the list or change the record`);
+      } else {
+        used[vocabKey].add(v);
+      }
     }
   }
 
