@@ -115,8 +115,9 @@ Put the vocabularies at the **top level of `data.json`**, alongside
 ```jsonc
 {
   "tasks_supported": [...],
+  "input_type":      [...],
+  "output_type":     [...],
   "languages":       [...],
-  "ai_systems":      [...],
   // ... more vocabularies ...
   "records":         [...]
 }

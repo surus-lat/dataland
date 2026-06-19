@@ -20,9 +20,9 @@ dataset card, not editing the file.
 - A web browser
 
 Optional: Claude Code with the `url-to-dataset-record` skill, which can
-draft the record from a HuggingFace URL. We'll do the manual path in
-this tutorial so the flow is visible — the skill path is covered in the
-[how-to](./howto-add-record.md#path-b--huggingface-dataset-via-skill).
+draft the record from a HuggingFace or Mozilla Data Collective URL. We'll
+do the manual path in this tutorial so the flow is visible — the skill
+path is covered in the [how-to](./howto-add-record.md#path-b--huggingface-dataset-via-skill).
 
 ## Step 1: Clone the repo and run the site
 
@@ -35,9 +35,10 @@ python3 -m http.server 8000
 Open <http://localhost:8000/datahub.html>.
 
 You should see the Datahub hero with a stat cluster ("Domains",
-"Languages", "Organizations", "AI Systems") and a searchable explorer
-below. Five records are visible — BERT, GPT-4, Whisper, Pegasus-X,
-LLaVA. That's the starting state.
+"Languages", "Organizations") and a searchable explorer below. A handful
+of LATAM Spanish speech corpora are visible — PRESEEA, CordeBA,
+google-argentinian-spanish, Common Voice, VoxForge. That's the starting
+state.
 
 Leave the server running. You'll come back to this tab.
 
@@ -61,102 +62,74 @@ saves you from pushing broken data.
 
 ## Step 3: Pick a dataset to add
 
-We'll add **`ylacombe/google-argentinian-spanish`** — Google's
-crowd-sourced Argentinian Spanish read-speech corpus, mirrored on
-HuggingFace. It's a strong LATAM-first record: Argentinian region,
-indigenous-to-Latin-America focus on local Spanish.
+We'll add **`marianbasti/mlqe-spanish`** as a worked example — a small
+Argentinian Spanish read-speech corpus on HuggingFace. (Substitute any
+real dataset you want to contribute.)
 
-Open the dataset card in your browser:
-<https://huggingface.co/datasets/ylacombe/google-argentinian-spanish>.
-
-Scan it for:
+Scan its dataset card for:
 
 - **Upstream source** — the README usually credits the original corpus
-  owner. For this dataset it's Google.
+  owner. For HF mirrors of older corpora, this is who *built* the
+  dataset, not who *re-uploaded* it.
 - **License** — listed on the right sidebar. Note the short form
-  (`cc-by-sa-4.0`).
+  (e.g. `cc-by-sa-4.0`).
 - **Year** — when the upstream corpus was first released, not when it
-  was uploaded to HF. The README will say.
+  was uploaded to HF.
+- **Sub-language coverage** — if the card lists specific countries or
+  accents (e.g. "Argentinian, Mexican, Chilean"), you'll list each one
+  in the `languages` array.
 - **Description fields** — what's in it, how it was collected, how
-  large it is (hours of audio, number of speakers).
+  large it is (hours of audio, number of speakers), format details
+  (MP3/WAV/parquet/TSV).
 
 ## Step 4: Read the current vocabularies
 
 Open [`data.json`](../data.json). Scroll to the top.
 
-You'll see top-level keys: `tasks_supported`, `input_types`, `domains`,
-`languages`, `ai_systems`, `architectures`, `licenses`,
+You'll see top-level keys: `tasks_supported`, `input_type`,
+`output_type`, `domains`, `languages`, `licenses`,
 `contributing_organizations`. These are the **only** legal values for
 the matching record fields. Adding a value not on these lists makes
 the validator fail.
 
-For our record we need:
+For a typical Argentinian Spanish ASR corpus record we need:
 
 | Field | Value | Already in vocab? |
 | --- | --- | --- |
 | `task` | `transcribe` | ✓ in `tasks_supported` |
-| `input_type` | `audio` | ✓ in `input_types` |
+| `input_type` | `audio` | ✓ in `input_type` |
+| `output_type` | `text` | ✓ in `output_type` |
 | `domain` | `general` | ✓ in `domains` |
-| `language` | `es-AR` | ✓ in `languages` |
-| `ai_system` | `dataset` | ✓ in `ai_systems` |
-| `architecture` | `Audio + Text (parquet)` | ✗ not yet in `architectures` — we'll add it |
-| `organization` | `Google` | ✓ already in `contributing_organizations` |
-| `license` | `CC-BY-SA 4.0` | ✗ not yet in `licenses` — we'll add it |
+| `languages` | `["es-AR"]` | ✓ `es-AR` in `languages` |
+| `organization` | the upstream source | ✓ or ✗ — check |
+| `license` | (whatever the card says) | ✓ or ✗ — check |
 
-Two vocabulary additions needed: one architecture descriptor and one
-license. Note these — every vocabulary addition will need to be called
-out in the PR body so reviewers see what's new.
+If anything's missing, add it to the vocab list before adding the
+record. Every vocabulary addition needs to be called out in the PR
+body so reviewers see what's new.
 
 ## Step 5: Edit `data.json`
 
-Make two vocabulary additions and one record addition. Edit
-`architectures`:
-
-```jsonc
-"architectures": [
-  "Audio + Text (parquet)",        // ← new
-  "Transformer (Decoder)",
-  "Transformer (Encoder)",
-  "Transformer (Seq2Seq)",
-  "Vision-Language"
-],
-```
-
-Edit `licenses`:
-
-```jsonc
-"licenses": [
-  "Apache 2.0",
-  "CC-BY-SA 4.0",                  // ← new
-  "MIT",
-  "Proprietary"
-],
-```
-
-(Keep entries alphabetical within each list — it makes diffs predictable.)
-
-Now scroll to the end of `records` and append:
+Append at the end of `records`:
 
 ```jsonc
 {
-  "id": 6,
+  "id": <next id>,
   "task": "transcribe",
   "input_type": "audio",
+  "output_type": "text",
   "domain": "general",
-  "language": "es-AR",
-  "ai_system": "dataset",
-  "architecture": "Audio + Text (parquet)",
-  "organization": "Google",
-  "license": "CC-BY-SA 4.0",
-  "model": "google-argentinian-spanish",
-  "params": "N/A",
-  "year": 2020,
-  "source_url": "https://huggingface.co/datasets/ylacombe/google-argentinian-spanish",
-  "description": "Crowd-sourced read-speech corpus of Argentinian Spanish from Google — short utterances paired with transcripts, originally released to enable LATAM-targeted TTS and ASR research. The HF mirror packages the original Google distribution into parquet shards for streaming."
+  "languages": ["es-AR"],
+  "organization": "<upstream source>",
+  "license": "<short form>",
+  "model": "<dataset display name>",
+  "year": <year>,
+  "source_url": "<canonical URL>",
+  "description": "<2–3 dense factual sentences, include format details>"
 }
 ```
 
-Don't forget the comma after the LLaVA entry that precedes it.
+Don't forget the comma after the previous record.
 
 ## Step 6: Run the validator
 
@@ -167,7 +140,7 @@ node scripts/validate-data.mjs
 Expected output:
 
 ```
-data.json: ok (6 records, 8 tasks, 3 organizations)
+data.json: ok (<N> records, 1 tasks, <M> organizations)
 ```
 
 If you see an error, the validator names exactly which record, which
@@ -191,11 +164,10 @@ Go back to the browser tab from Step 1 and refresh
 
 You should see:
 
-- A new card in the explorer for `google-argentinian-spanish`
+- A new row in the explorer for your dataset
 - The "Languages" stat unchanged (it counts the vocabulary, not the
   records — `es-AR` was already there)
-- Filter options for `transcribe`, `audio`, `dataset`, `es-AR` returning
-  the new entry
+- Search for `transcribe`, `audio`, `es-AR` returns the new entry
 
 If the new record doesn't appear, hard-refresh (Cmd+Shift+R / Ctrl+Shift+R)
 to bust the browser cache.
@@ -223,14 +195,13 @@ git push -u origin FEAT/add-google-argentinian-spanish
 ## Step 9: Open the PR
 
 ```sh
-gh pr create --base dev --title "[ADD] google-argentinian-spanish dataset" --body "$(cat <<'EOF'
-**Source**: https://huggingface.co/datasets/ylacombe/google-argentinian-spanish
-**Artifact**: google-argentinian-spanish  ·  **Organization**: Google  ·  **Year**: 2020
-**Inferred fields**: task=transcribe, input_type=audio, domain=general, language=es-AR, ai_system=dataset
+gh pr create --base dev --title "[ADD] <dataset name>" --body "$(cat <<'EOF'
+**Source**: <source_url>
+**Artifact**: <dataset name>  ·  **Organization**: <organization>  ·  **Year**: <year>
+**Inferred fields**: task=transcribe, input_type=audio, output_type=text, domain=general, languages=["es-AR"]
 
 **Vocabulary additions**:
-- `architectures`: `Audio + Text (parquet)`
-- `licenses`: `CC-BY-SA 4.0`
+- `<vocab>`: `<new entry>` (or "none")
 EOF
 )"
 ```

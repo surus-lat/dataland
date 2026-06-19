@@ -2,7 +2,7 @@
 
 The entire registry is one JSON file: [`data.json`](../data.json). Its top-level keys
 declare the **vocabularies** (the allowed values for every constrained field);
-`records` is an array of artifact entries that must reference values from those
+`records` is an array of **dataset entries** that must reference values from those
 vocabularies. The validator enforces this consistency on every commit and
 every build.
 
@@ -10,19 +10,23 @@ This page is the authoritative description of the schema. For the design
 rationale, see [explanation-design.md](./explanation-design.md). To contribute
 a record, see [howto-add-record.md](./howto-add-record.md).
 
+> **Datasets only.** Every record in this registry describes a dataset — a
+> corpus used to train or evaluate AI systems. There are no `ai_system`,
+> `architecture`, or `params` fields. If a URL describes a model, an agent,
+> or a benchmark leaderboard, it does not belong here.
+
 ## Top-level keys
 
 ```jsonc
 {
-  "tasks_supported":            [...],   // verbs
-  "input_types":                [...],   // mediums
+  "tasks_supported":            [...],   // verbs the datasets train/evaluate
+  "input_type":                 [...],   // mediums consumed
+  "output_type":                [...],   // mediums produced
   "domains":                    [...],   // knowledge groupings
   "languages":                  [...],   // LATAM-first language tags
-  "ai_systems":                 [...],   // artifact kinds
-  "architectures":              [...],   // architecture / format descriptors
   "licenses":                   [...],   // short-form license names
   "contributing_organizations": [...],   // [{ name, logo }]
-  "records":                    [...]    // the artifact entries
+  "records":                    [...]    // the dataset entries
 }
 ```
 
@@ -40,48 +44,46 @@ top-level: legacy "ontology" key must be removed — vocabularies live at the to
 
 ### `tasks_supported` — verbs
 
-The action the artifact performs. **Always a verb**, never a noun phrase.
-
-Current values:
+The action the dataset trains or evaluates. **Always a verb**, never a noun phrase.
 
 | Value | When to use |
 | --- | --- |
-| `classify` | Assign an input to one of a fixed set of labels |
-| `extract` | Pull structured spans (entities, relations) from unstructured input |
 | `transcribe` | Audio → text |
-| `summarize` | Long input → short faithful output |
-| `retrieve_information` | Search, RAG, open-domain QA |
-| `reason` | Multi-step inference over text or multimodal input |
-| `chat` | Conversational instruction-following |
-| `voice` | Text → audio (TTS) |
 
-If your artifact's headline action isn't on the list, add the verb in
-`tasks_supported` first (alphabetical order), then add the record.
+The current registry is transcription-focused. Adding a dataset whose
+headline task isn't on the list? Add the verb in `tasks_supported` first
+(alphabetical order), then add the record.
 
-### `input_types` — mediums
+### `input_type` — mediums consumed
 
-The medium the action is performed on.
+The medium the trained system reads.
 
 | Value | Notes |
 | --- | --- |
-| `text` | Plain or structured text |
-| `image` | Single image or sequence of images |
 | `audio` | Speech, music, ambient |
-| `video` | Frame sequence with audio track |
-| `code` | Source code or AST — distinct from `text` for the frontend's signal view |
+
+(Extend with `text`, `image`, `video`, `code` as records require.)
+
+### `output_type` — mediums produced
+
+The medium the trained system emits.
+
+| Value | Notes |
+| --- | --- |
+| `text` | ASR transcripts, translations |
+
+(Extend with `audio` for TTS, etc., as records require.)
 
 ### `domains` — knowledge groupings
 
 Domains are knowledge groupings, **not** technical buckets. "NLP" and
-"Computer Vision" are not domains here; they're combinations of `task` +
-`input_type`.
+"Computer Vision" are not domains here.
 
 | Value | Use when |
 | --- | --- |
 | `general` | Open-domain / no specialized field. Default for most records. |
-| `medical` | Clinical, biomedical, pharmaceutical content |
-| `legal` | Statute, case law, contract text |
-| `finance` | Markets, banking, accounting |
+
+(Extend with `medical`, `legal`, `finance` as records require.)
 
 ### `languages` — LATAM-first
 
@@ -92,51 +94,38 @@ reasoning.
 | Region | Tags |
 | --- | --- |
 | Spanish (LATAM) | `es-AR`, `es-BO`, `es-CL`, `es-CO`, `es-CR`, `es-CU`, `es-DO`, `es-EC`, `es-GT`, `es-HN`, `es-MX`, `es-NI`, `es-PA`, `es-PE`, `es-PR`, `es-PY`, `es-SV`, `es-UY`, `es-VE` |
-| Portuguese | `pt-BR` |
+| Spanish (coarse) | `es` — fallback when the source page mentions Spanish but doesn't resolve sub-variants |
+| Portuguese | `pt-BR`, `pt` (coarse fallback) |
 | Indigenous LATAM | `qu` (Quechua), `gn` (Guarani), `ay` (Aymara) |
 | Utility | `en`, `Multilingual`, `N/A` |
 
 Rules:
 
-- **No bare `es` or `pt`.** Every Spanish-speaking LATAM country has its own
-  variant. If your dataset's regional code is missing, add it — the
-  vocabulary is meant to grow toward more LATAM coverage, not less.
+- **Records use an array of language tags**, not a single string. Even
+  single-language datasets use a one-element array (`["es-AR"]`).
+- **List every variant the source page names.** PRESEEA names 11 LATAM
+  countries → list all 11 country codes. The point of the array is so a
+  contributor can scan and tell at a glance whether their variant of
+  interest is covered.
+- **`es` / `pt` are coarse fallbacks**, not the default. Use them only when
+  the source mentions Spanish/Portuguese but doesn't resolve sub-variants.
+  A record reading `["es"]` means "Spanish, breakdown not stated";
+  `["es-AR", "es-MX"]` means "specifically Argentinian and Mexican Spanish".
+- **`Multilingual` is for multiple *different* languages** (Spanish +
+  Portuguese + Quechua), not multiple Spanish variants. A pan-Hispanic
+  corpus is `["es"]` or a list of country codes.
 - **European Spanish and European Portuguese are intentionally out of scope.**
-  Records limited to those variants don't belong in the registry.
-- `Multilingual` is for artifacts that genuinely span many languages
-  (Whisper, GPT-4). Don't use it as a fallback when you can't identify the
-  language.
-- `N/A` is for non-linguistic artifacts (vision-only models, audio-event
-  classifiers).
+  Drop Castilian / peninsular / Canary from the array. If all you have is
+  peninsular, the dataset isn't a LATAM fit.
+- **`N/A` is for non-linguistic artifacts** (audio-event classifiers, etc.).
 - If you need an indigenous language not on the list, add the ISO 639 code
   and open a PR.
 
-### `ai_systems` — artifact kinds
-
-The closed enum for what *kind* of thing a record describes.
-
-| Value | Use when |
-| --- | --- |
-| `model` | A single trained network with well-defined I/O (BERT, YOLOv8, SAM) |
-| `workflow` | A pipeline or model with non-trivial inference (Whisper-large-v3, AlphaFold) |
-| `agent` | Instruction-tuned, driven by prompts and chosen actions (GPT-4, LLaVA) |
-| `node` | Reusable building block — confirm with maintainers before using |
-| `dataset` | A data corpus (HF dataset, manually curated benchmark, scraped collection) |
-
-For datasets, `params` is `"N/A"` — datasets don't have parameters.
-
-### `architectures` — architecture or format descriptors
-
-Short noun-phrase descriptors. For models, the network family
-(`"Transformer (Encoder)"`, `"Vision-Language"`). For datasets, the modality
-and packaging (`"Audio + Text (parquet)"`, `"Image + Text (webdataset)"`).
-The frontend column is narrow — keep entries under ~30 characters.
-
 ### `licenses` — short-form license names
 
-Normalized short forms (`"Apache 2.0"`, `"MIT"`, `"CC-BY-SA 4.0"`,
-`"Proprietary"`). For the canonical mapping from raw license tags to short
-forms used here, see
+Normalized short forms (`"CC0"`, `"CC-BY-SA 4.0"`, `"GPL-3.0"`,
+`"CC-BY-NC-ND 4.0"`, etc.). For the canonical mapping from raw license tags
+to short forms used here, see
 [`.claude/skills/url-to-dataset-record/references/license-table.md`](../.claude/skills/url-to-dataset-record/references/license-table.md).
 
 ### `contributing_organizations`
@@ -145,8 +134,8 @@ An array of `{ name, logo }` objects, not bare strings. `logo` may be `null`.
 
 ```jsonc
 "contributing_organizations": [
-  { "name": "Google", "logo": null },
-  { "name": "Hugging Face", "logo": "/uploads/logos/hf.svg" }
+  { "name": "Mozilla Foundation", "logo": null },
+  { "name": "Google", "logo": "/uploads/logos/google.svg" }
 ]
 ```
 
@@ -159,20 +148,18 @@ Each entry in `records` has this exact set of fields. All are required.
 
 ```jsonc
 {
-  "id":            6,                        // unique int, max+1 of existing ids
-  "task":          "transcribe",             // ∈ tasks_supported
-  "input_type":    "audio",                  // ∈ input_types
-  "domain":        "general",                // ∈ domains
-  "language":      "es-AR",                  // ∈ languages
-  "ai_system":     "dataset",                // ∈ ai_systems
-  "architecture":  "Audio + Text (parquet)", // ∈ architectures
-  "organization":  "Google",                 // ∈ contributing_organizations[].name
-  "license":       "CC-BY-SA 4.0",           // ∈ licenses
-  "model":         "google-argentinian-spanish", // artifact display name
-  "params":        "N/A",                    // string (e.g. "340M", "2.8B", "N/A")
-  "year":          2020,                     // int — first release year
+  "id":            3,                                  // unique int, max+1 of existing ids
+  "task":          "transcribe",                       // ∈ tasks_supported
+  "input_type":    "audio",                            // ∈ input_type
+  "output_type":   "text",                             // ∈ output_type
+  "domain":        "general",                          // ∈ domains
+  "languages":     ["es-AR"],                          // array — every entry ∈ languages
+  "organization":  "Google",                           // ∈ contributing_organizations[].name
+  "license":       "CC-BY-SA 4.0",                     // ∈ licenses
+  "model":         "google-argentinian-spanish",       // dataset display name
+  "year":          2020,                               // int — first release year
   "source_url":    "https://huggingface.co/datasets/ylacombe/google-argentinian-spanish",
-  "description":   "Crowd-sourced read-speech corpus of Argentinian Spanish from Google — short utterances paired with transcripts, originally released to enable LATAM-targeted TTS and ASR research. The HF mirror packages the original Google distribution into parquet shards for streaming."
+  "description":   "Crowd-sourced read-speech corpus of Argentinian Spanish from Google — short utterances paired with transcripts, originally released to enable LATAM-targeted TTS and ASR research. Splits cover 3,921 female and 1,818 male recordings, packaged by the HF mirror into parquet shards for streaming."
 }
 ```
 
@@ -181,19 +168,17 @@ Each entry in `records` has this exact set of fields. All are required.
 | Field | Type | Notes |
 | --- | --- | --- |
 | `id` | int | Unique. New records use `max(records[].id) + 1`. Duplicate ids fail validation. |
-| `task` | string | Verb from `tasks_supported`. The action. |
-| `input_type` | string | Medium from `input_types`. The thing the action operates on. |
+| `task` | string | Verb from `tasks_supported`. The action the dataset trains/evaluates. |
+| `input_type` | string | Medium from `input_type`. What the trained system consumes. |
+| `output_type` | string | Medium from `output_type`. What the trained system produces. |
 | `domain` | string | Knowledge grouping from `domains`. Default `"general"`. |
-| `language` | string | LATAM-first tag from `languages`. Country code for region-specific data, `Multilingual` for true multi-language, `N/A` for non-linguistic. |
-| `ai_system` | string | Artifact kind from `ai_systems`. |
-| `architecture` | string | From `architectures`. Model architecture for models; modality + format for datasets. |
+| `languages` | string[] | Non-empty array of tags from `languages`. List every variant the source names; use coarse `es`/`pt` only when sub-variants aren't resolved. |
 | `organization` | string | Must match a `name` in `contributing_organizations`. Use the **upstream source**, not the republisher (e.g. `Google`, not the HF account holder). |
 | `license` | string | Short-form from `licenses`. |
-| `model` | string | The artifact's display name. Yes, the field is called `model` even for datasets and agents — treat it as the artifact name regardless of kind. |
-| `params` | string | Parameter count as a published string (`"340M"`, `"1.55B"`, `"Unknown"`). For datasets, `"N/A"`. Don't round (`"2.8B"` ≠ `"3B"`). |
+| `model` | string | The dataset's display name. Yes, the field is called `model` — legacy. Treat it as the dataset name. |
 | `year` | int | First-release year. For HF mirrors of older corpora, use the upstream year, not the upload year. |
-| `source_url` | string | The artifact's canonical URL, with tracking params stripped. |
-| `description` | string | 2–3 dense factual sentences, ~250–450 characters. Match the registry's terse tone — no marketing language. |
+| `source_url` | string | The dataset's canonical URL, with tracking params stripped. |
+| `description` | string | 2–3 dense factual sentences, ~250–450 characters. Include format details (parquet, MP3, WAV, TSV). Match the registry's terse tone — no marketing language. |
 
 ## Derived values
 
@@ -203,7 +188,6 @@ The frontend computes its hero stats from the **vocabularies**, not from
 - "Domains" count → `domains.length`
 - "Languages" count → `languages.length`
 - "Organizations" count → `contributing_organizations.length`
-- "AI Systems" count → `ai_systems.length`
 
 This means: adding a vocabulary entry without any record using it will
 increase the displayed stats. The validator warns on unused entries but
@@ -221,7 +205,7 @@ behavior. It runs:
 
 | Rule | Message shape |
 | --- | --- |
-| `tasks_supported`, `input_types`, `domains`, `languages`, `ai_systems`, `architectures`, `licenses` must each be arrays | `top-level: "<key>" must be an array` |
+| `tasks_supported`, `input_type`, `output_type`, `domains`, `languages`, `licenses` must each be arrays | `top-level: "<key>" must be an array` |
 | `contributing_organizations` must be an array of `{ name, logo }` | `top-level: "contributing_organizations" must be an array of {name, logo}` |
 | `records` must be an array | `top-level: "records" must be an array` |
 | Legacy `ontology` key must not exist | `top-level: legacy "ontology" key must be removed — vocabularies live at the top level now` |
@@ -229,6 +213,7 @@ behavior. It runs:
 | Each org entry must include a `logo` key (`null` is fine) | `contributing_organizations[i] ("<name>"): missing "logo" key (use null if none)` |
 | Records must include every required field | `record #<id> ("<model>"): missing field "<field>"` |
 | Record ids must be unique | `record #<id> ("<model>"): duplicate id` |
+| `languages` must be a non-empty array | `record #<id> ("<model>"): languages must be an array of values from languages` / `… must not be empty` |
 | Every constrained field must reference its vocabulary | `record #<id> ("<model>"): <field> "<value>" not in <vocab> — add it to the list or change the record` |
 | `organization` must match a name in `contributing_organizations` | `record #<id> ("<model>"): organization "<name>" not in contributing_organizations — add it to the list or change the record` |
 
@@ -245,16 +230,15 @@ vocabulary and the live data so it gets cleaned up over time.
 ### Success output
 
 ```
-data.json: ok (5 records, 8 tasks, 3 organizations)
+data.json: ok (6 records, 1 tasks, 5 organizations)
 ```
 
 ## Required record fields (machine-readable)
 
 ```js
 const REQUIRED_FIELDS = [
-  'id', 'task', 'input_type', 'domain', 'language',
-  'ai_system', 'architecture', 'organization', 'license',
-  'model', 'params', 'year', 'source_url', 'description',
+  'id', 'task', 'input_type', 'output_type', 'domain', 'languages',
+  'organization', 'license', 'model', 'year', 'source_url', 'description',
 ];
 ```
 
