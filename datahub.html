@@ -125,43 +125,6 @@
       [data-table-scroll]::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.30); }
     }
 
-    /* ── Paper link (sits below the nav manifest) ── */
-    #paper-link {
-      position: fixed; top: 230px; right: 56px;
-      z-index: 30; pointer-events: auto;
-      text-decoration: none;
-      display: flex; align-items: center; gap: 9px;
-      padding: 6px 8px 6px 6px;
-      border-radius: 4px;
-      transition: opacity 0.2s;
-      opacity: 0.55;
-    }
-    #paper-link:hover { opacity: 0.95; }
-    #paper-link::before {
-      content: '';
-      position: absolute; top: -10px; left: 6px; right: 6px;
-      height: 1px; background: rgba(255,255,255,0.10);
-    }
-    #paper-link .pl-icon {
-      width: 6px; height: 6px; flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,0.55);
-      transform: rotate(45deg);
-    }
-    #paper-link .pl-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; letter-spacing: 0.04em;
-      color: rgba(255,255,255,0.64);
-    }
-    #paper-link .pl-arrow {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: rgba(172,238,192,0.62);
-      margin-left: 2px;
-    }
-    @media (max-width: 768px) {
-      #paper-link { top: 168px; right: 24px; }
-    }
-
     /* ── Hero (top page) — DatahubHero renders inside ── */
     #hero {
       position: fixed; inset: 0; z-index: 5;
@@ -257,12 +220,6 @@
       <div class="nm-dot"></div><span class="nm-name">ai</span>
     </div>
   </div>
-
-  <a id="paper-link" href="/paper.html">
-    <span class="pl-icon"></span>
-    <span class="pl-label">paper</span>
-    <span class="pl-arrow">→</span>
-  </a>
 
   <div id="root"></div>
   <script type="text/babel" src="tweaks-panel.jsx"></script>
@@ -545,7 +502,7 @@
       { label: 'task',    flex: '0.9fr' },
       { label: 'input',   flex: '0.55fr' },
       { label: 'output',  flex: '0.55fr' },
-      { label: 'model',   flex: '1.4fr' },
+      { label: 'dataset-name', flex: '1.4fr' },
       { label: 'domain',  flex: '0.7fr' },
       { label: 'org',     flex: '1.0fr' },
       { label: 'lang',    flex: '1.4fr' },
@@ -748,7 +705,7 @@
           <div style={{ flex: 1, overflowY: 'auto', padding: '18px' }}>
             <Field label="Description" value={item.description} full />
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0 14px' }}>
-              <Field label="Model"        value={item.model}        mono />
+              <Field label="Dataset Name" value={item.model}        mono />
               <Field label="License"      value={item.license}      mono />
               <Field label="Input Type"   value={item.input_type} />
               <Field label="Output Type"  value={item.output_type} />

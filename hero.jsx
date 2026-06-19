@@ -33,13 +33,10 @@
   const subText    = S.textSwap ? '/<task?>/<domain?>/<language?>' : 'open-source | community-driven';
   const subsubText = S.textSwap ? 'open-source | community-driven' : '/<task?>/<domain?>/<language?>';
 
-  const PATHS = [
-    { tarea: 'transcription',  dominio: 'legal',     lang: 'es-PY', n: '1,847', size: '2.4 GB', lic: 'CC-BY-4.0' },
-    { tarea: 'labeling',       dominio: 'health',    lang: 'es-AR', n: '2,140', size: '3.1 GB', lic: 'CC-BY-SA'  },
-    { tarea: 'classification', dominio: 'education', lang: 'pt-BR', n: '1,203', size: '1.8 GB', lic: 'MIT'       },
-    { tarea: 'ner',            dominio: 'justice',   lang: 'es',    n: '894',   size: '740 MB', lic: 'CC-BY-4.0' },
-    { tarea: 'segmentation',   dominio: 'climate',   lang: 'qu',    n: '512',   size: '5.2 GB', lic: 'CC0'       },
-    { tarea: 'detection',      dominio: 'transport', lang: 'es-MX', n: '1,677', size: '4.0 GB', lic: 'CC-BY-SA'  },
+  /* Fallback paths shown while data.json is still loading. Same shape as real
+     records: task / domain / first language + dataset name / license / year. */
+  const DEFAULT_PATHS = [
+    { tarea: 'transcribe',     dominio: 'general',   lang: 'es-AR', name: '—',         license: '—',          year: '—' },
   ];
 
   const toHex = (v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0');
@@ -51,11 +48,14 @@
   };
 
   /* ── Terminal ── */
-  function Terminal() {
+  function Terminal({ paths }) {
+    const list = (paths && paths.length) ? paths : DEFAULT_PATHS;
     const [idx, setIdx] = useState(0);
     const [typed, setTyped] = useState(0);
     const [phase, setPhase] = useState('typing');
-    const p = PATHS[idx];
+    // clamp idx in case data.json shrinks between renders
+    const safeIdx = idx % list.length;
+    const p = list[safeIdx];
     const full = `/${p.tarea}/${p.dominio}/${p.lang}`;
 
     useEffect(() => {
@@ -67,10 +67,10 @@
         timer = setTimeout(() => setPhase('del'), 320);
       } else {
         if (typed > 0) timer = setTimeout(() => setTyped(typed - 1), 17);
-        else { setIdx(i => (i + 1) % PATHS.length); setPhase('typing'); }
+        else { setIdx(i => (i + 1) % list.length); setPhase('typing'); }
       }
       return () => clearTimeout(timer);
-    }, [typed, phase, idx, full.length]);
+    }, [typed, phase, idx, full.length, list.length]);
 
     const dim = 'rgba(255,255,255,0.34)';
     const segs = [
@@ -112,7 +112,7 @@
         </div>
         <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.4)', marginTop: 9, minHeight: 14,
           opacity: done ? 1 : 0, transition: 'opacity 220ms', letterSpacing: '0.04em' }}>
-          {p.n} datasets · {p.size} · {p.lic}
+          {p.name} · {p.license} · {p.year}
         </div>
       </div>
     );
@@ -135,6 +135,26 @@
     );
   }
 
+  /* ── Manuscript link — top-left mirror of the lat/long whisper ── */
+  function ManuscriptLink() {
+    const [hover, setHover] = useState(false);
+    const color    = hover ? '#aceeC0' : 'rgba(255,255,255,0.42)';
+    const dotColor = hover ? '#aceeC0' : 'rgba(255,255,255,0.32)';
+    return (
+      <a href="/paper.html"
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        style={{ position: 'absolute', top: 50, left: 'clamp(16px, 8vw, 56px)', zIndex: 6,
+          fontFamily: MONO, fontSize: 'clamp(8px, 2.5vw, 10px)', letterSpacing: '0.18em', textTransform: 'uppercase',
+          color, textShadow: '0 1px 8px rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
+          textDecoration: 'none', transition: 'color 0.2s' }}>
+        <span style={{ fontSize: 7, color: dotColor, transition: 'color 0.2s' }}>◆</span>
+        Manuscript
+      </a>
+    );
+  }
+
   /* ── Hero ── */
   function DatahubHero() {
     const [data, setData] = useState(null);
@@ -147,15 +167,25 @@
 
     const stats = useMemo(() => {
       if (!data) return null;
-      // Language count excludes the bookkeeping values "N/A" (non-linguistic
-      // artifacts) and "Multilingual" (multi-language) — those shouldn't inflate
-      // the headline number. Vocabulary is the source of truth, not the records.
-      const realLangs = (data.languages || []).filter(l => l !== 'N/A' && l !== 'Multilingual');
+      // Counts reflect what is actually present in records[], not the
+      // vocabulary breadth. "N/A" and "Multilingual" are bookkeeping values
+      // and excluded from the language count.
+      const records = data.records || [];
+      const domains = new Set();
+      const langs   = new Set();
+      const orgs    = new Set();
+      for (const r of records) {
+        if (r.domain) domains.add(r.domain);
+        if (r.organization) orgs.add(r.organization);
+        for (const l of (r.languages || [])) {
+          if (l && l !== 'N/A' && l !== 'Multilingual') langs.add(l);
+        }
+      }
       return {
-        datasets:     (data.records || []).length,
-        domains:      (data.domains || []).length,
-        languages:    realLangs.length,
-        contributors: (data.contributing_organizations || []).length,
+        datasets:     records.length,
+        domains:      domains.size,
+        languages:    langs.size,
+        contributors: orgs.size,
       };
     }, [data]);
 
@@ -166,6 +196,20 @@
           `${stats.contributors} CONTRIBUTORS`,
         ]
       : ['— DATASETS', '— DOMAINS · — LANGUAGES', '— CONTRIBUTORS'];
+
+    /* Terminal examples sourced from real records in data.json */
+    const terminalPaths = useMemo(() => {
+      const records = data && data.records;
+      if (!records || !records.length) return null;
+      return records.map(r => ({
+        tarea:   r.task    || 'unknown',
+        dominio: r.domain  || 'general',
+        lang:    (r.languages && r.languages[0]) || 'es',
+        name:    r.model   || '—',
+        license: r.license || '—',
+        year:    String(r.year || '—'),
+      }));
+    }, [data]);
 
     return (
       <div style={{ position: 'absolute', inset: 0, fontFamily: SANS }}>
@@ -184,6 +228,10 @@
           <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.32)' }}>◆</span>
           −34.6037° S · −58.3816° W · BUENOS AIRES
         </div>
+
+        {/* Manuscript link — top-left, mirrors the lat/long whisper aesthetic */}
+        <ManuscriptLink />
+
 
         {/* Content — 95% scale */}
         <div style={{ position: 'absolute', inset: 0, transform: 'scale(0.95)', transformOrigin: 'center' }}>
@@ -216,7 +264,7 @@
           {/* Terminal */}
           <div style={{ position: 'absolute', bottom: 108, left: '50%', zIndex: 9,
             transform: `translateX(-50%) translate(${S.termPos.x}px, ${S.termPos.y}px)` }}>
-            <Terminal />
+            <Terminal paths={terminalPaths} />
           </div>
 
         </div>
