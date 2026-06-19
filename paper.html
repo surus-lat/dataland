@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Data Hub — A Working Paper · datahub.lat</title>
+
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://datahub.lat/paper.html">
+  <meta property="og:title" content="The Data Hub: An Open Dataset Layer for AI in Latin America">
+  <meta property="og:description" content="A working paper by the Surus team on the missing dataset and benchmark layers of AI in Latin America.">
+  <meta property="og:image" content="https://datahub.lat/uploads/ogimage.jpg">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Data Hub — A Working Paper">
+  <meta name="twitter:image" content="https://datahub.lat/uploads/ogimage.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cinzel:wght@400;500;600;700&family=Goudy+Bookletter+1911&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      background: #040c0a;
+      color: #ece6d4;
+      font-family: 'EB Garamond', Georgia, serif;
+    }
+    html { scrollbar-width: thin; scrollbar-color: rgba(172,238,192,0.18) transparent; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.18); border-radius: 6px; }
+
+    /* ── Ambient living-layers backdrop ── */
+    #bg-frame {
+      position: fixed; inset: 0; z-index: 0;
+      width: 100%; height: 100%;
+      border: none; pointer-events: none;
+      opacity: 0.32;
+      filter: saturate(0.85) brightness(0.65);
+    }
+    #bg-fade {
+      position: fixed; inset: 0; z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 50% 0%,   rgba(172,238,192,0.05), transparent 55%),
+        linear-gradient(to bottom, rgba(4,12,10,0.55), rgba(4,12,10,0.78));
+    }
+
+    /* ── Top bar ── */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(236,230,212,0.42);
+      background: linear-gradient(to bottom, rgba(4,12,10,0.85), rgba(4,12,10,0));
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    #topbar a {
+      color: rgba(236,230,212,0.62);
+      text-decoration: none;
+      transition: color 0.2s, opacity 0.2s;
+    }
+    #topbar a:hover { color: #aceeC0; }
+    #topbar .tb-left { display: flex; align-items: center; gap: 14px; }
+    #topbar .tb-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #aceeC0; box-shadow: 0 0 8px #aceeC0;
+      animation: dotPulse 3.2s ease-in-out infinite;
+    }
+    #topbar .tb-mid {
+      color: rgba(236,230,212,0.30);
+      font-size: 9px;
+    }
+    #topbar .tb-right { display: flex; gap: 22px; }
+    @keyframes dotPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(172,238,192,0); }
+      50%     { box-shadow: 0 0 0 5px rgba(172,238,192,0.15); }
+    }
+    @media (max-width: 720px) {
+      #topbar { padding: 14px 18px; font-size: 8px; }
+      #topbar .tb-mid { display: none; }
+    }
+
+    /* ── Paper sheet ── */
+    #paper {
+      position: relative; z-index: 5;
+      max-width: 760px;
+      margin: 96px auto 120px;
+      padding: 96px 78px 92px;
+      /* layers, top to bottom:
+         1. golden sun-kiss bleeding in from above the page
+         2. soft mint halo at the crown
+         3. warm cream paper gradient                                 */
+      background:
+        radial-gradient(ellipse 95% 45% at 50% -8%, rgba(245,185,69,0.22), transparent 65%),
+        radial-gradient(ellipse 70% 50% at 50% 4%, rgba(172,238,192,0.10), transparent 72%),
+        linear-gradient(180deg, #f8efcf 0%, #f1e8cd 28%, #efe7cf 100%);
+      color: #2b2820;
+      border-radius: 4px;
+      box-shadow:
+        0 60px 140px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(172,238,192,0.16),
+        0 -20px 80px rgba(245,185,69,0.08),
+        0 0 80px rgba(172,238,192,0.04);
+    }
+    #paper::before {
+      /* subtle paper grain */
+      content: '';
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(80,60,30,0.012) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(80,60,30,0.012) 0 1px, transparent 1px 3px);
+      mix-blend-mode: multiply;
+      border-radius: inherit;
+    }
+    @media (max-width: 760px) {
+      #paper { margin: 78px 14px 80px; padding: 56px 26px 64px; }
+    }
+
+    /* ── Paper header ── */
+    .preprint-id {
+      position: absolute; top: 28px; right: 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.22em;
+      color: rgba(31,61,42,0.55);
+      text-align: right; line-height: 1.7;
+    }
+    .preprint-id .pid-line {
+      display: block;
+    }
+    .preprint-id .pid-class {
+      color: rgba(31,61,42,0.85);
+      font-weight: 500;
+    }
+    @media (max-width: 760px) {
+      .preprint-id { position: static; text-align: left; margin-bottom: 28px; }
+    }
+
+    .sun-ornament {
+      display: block;
+      margin: 4px auto 28px;
+      width: 108px; height: 108px;
+      filter: drop-shadow(0 0 22px rgba(245,185,69,0.32));
+    }
+
+    /* ── Botanical corner ornaments on the paper sheet ── */
+    .corner-ornament {
+      position: absolute;
+      width: 130px; height: 130px;
+      opacity: 0.78;
+      pointer-events: none;
+    }
+    .corner-ornament.tl { top: 14px; left: 14px; }
+    .corner-ornament.tr { top: 14px; right: 14px; transform: scaleX(-1); }
+    .corner-ornament.bl { bottom: 14px; left: 14px; transform: scaleY(-1); }
+    .corner-ornament.br { bottom: 14px; right: 14px; transform: scale(-1, -1); }
+    @media (max-width: 760px) {
+      .corner-ornament { width: 86px; height: 86px; }
+    }
+
+    h1.paper-title {
+      font-family: 'Cinzel', 'EB Garamond', serif;
+      font-weight: 600;
+      font-size: 38px;
+      line-height: 1.16;
+      letter-spacing: 0.005em;
+      color: #1a3324;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .paper-subtitle {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: #3d5b46;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .authors {
+      text-align: center;
+      font-family: 'EB Garamond', serif;
+      font-size: 16px;
+      color: #2a4030;
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+    .authors .a-name { white-space: nowrap; }
+    .authors sup {
+      font-size: 10px;
+      color: #3d7a55;
+      margin-left: 2px;
+    }
+    .affiliations {
+      text-align: center;
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 13.5px;
+      color: rgba(43,40,32,0.62);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .affiliations .aff-marker {
+      font-style: normal;
+      color: #3d7a55;
+      margin-right: 4px;
+      font-size: 10px;
+      vertical-align: super;
+    }
+    .paper-date {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(31,61,42,0.55);
+      margin-bottom: 28px;
+    }
+
+    .vine-divider {
+      display: block;
+      margin: 16px auto 36px;
+      width: 240px; height: 28px;
+      opacity: 0.55;
+    }
+
+    /* ── Abstract block ── */
+    .abstract-label {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: #1f3d2a;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .abstract {
+      margin: 0 6px 56px;
+      padding: 0 22px;
+      border-left: 2px solid rgba(61,122,85,0.32);
+      border-right: 2px solid rgba(61,122,85,0.16);
+    }
+    .abstract p {
+      font-size: 15.5px;
+      line-height: 1.7;
+      color: #2c2920;
+      margin-bottom: 14px;
+      text-align: justify;
+      hyphens: auto;
+    }
+    .abstract p:last-child { margin-bottom: 0; }
+
+    /* ── Section typography ── */
+    section.body-section {
+      margin-bottom: 44px;
+    }
+    h2.sec-title {
+      font-family: 'Cinzel', serif;
+      font-size: 19px;
+      font-weight: 600;
+      color: #1a3324;
+      letter-spacing: 0.02em;
+      margin-top: 36px;
+      margin-bottom: 18px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(61,122,85,0.22);
+      display: flex; align-items: baseline; gap: 12px;
+    }
+    h2.sec-title .sec-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #3d7a55;
+      letter-spacing: 0.04em;
+      font-weight: 500;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    h2.sec-title .sec-num::before {
+      content: '';
+      display: inline-block;
+      width: 14px; height: 14px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='M2 11 Q1 5 7 2 Q11 4 10 9 Q8 12 4 12 Q2.5 12 2 11 Z' fill='%233d7a55' opacity='0.85'/><path d='M3 11 Q5 8 8 5' stroke='%231f3d2a' stroke-width='0.4' fill='none' opacity='0.7'/><circle cx='10' cy='3' r='1.3' fill='%23f5b945' opacity='0.85'/></svg>");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    h3.subsec-title {
+      font-family: 'Cinzel', serif;
+      font-size: 14.5px;
+      font-weight: 500;
+      color: #2a4030;
+      letter-spacing: 0.04em;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      display: flex; align-items: baseline; gap: 10px;
+    }
+    h3.subsec-title .subsec-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #5fa085;
+      font-weight: 500;
+    }
+
+    p.body {
+      font-size: 16px;
+      line-height: 1.72;
+      color: #2c2920;
+      margin-bottom: 14px;
+      text-align: justify;
+      hyphens: auto;
+      font-feature-settings: "liga", "kern", "onum";
+    }
+    p.body em { color: #2a4030; }
+    p.body strong {
+      color: #1f3d2a;
+      font-weight: 600;
+    }
+    p.body .term {
+      color: #1f3d2a;
+      font-weight: 600;
+      background: linear-gradient(180deg, transparent 62%, rgba(172,238,192,0.42) 62%, rgba(172,238,192,0.42) 92%, transparent 92%);
+      padding: 0 2px;
+    }
+
+    /* drop cap on the first paragraph of each major section — touched by sun */
+    section.body-section > p.body.first::first-letter {
+      font-family: 'Cinzel', 'EB Garamond', serif;
+      font-size: 52px;
+      float: left;
+      line-height: 0.88;
+      padding: 6px 10px 0 0;
+      background: linear-gradient(135deg, #1f3d2a 0%, #3d7a55 55%, #a8782a 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      font-weight: 600;
+      text-shadow: none;
+    }
+
+    ul.body-list {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 18px;
+    }
+    ul.body-list li {
+      font-size: 15.5px;
+      line-height: 1.7;
+      color: #2c2920;
+      padding-left: 26px;
+      position: relative;
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+    ul.body-list li::before {
+      content: '❧';
+      position: absolute; left: 4px; top: 2px;
+      color: #3d7a55;
+      font-size: 13px;
+    }
+    ul.body-list li strong {
+      color: #1f3d2a;
+      font-weight: 600;
+    }
+
+    /* ── Footer / colophon ── */
+    .paper-footer {
+      margin-top: 56px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(61,122,85,0.22);
+      text-align: center;
+    }
+    .cite-block {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      line-height: 1.7;
+      color: rgba(31,61,42,0.7);
+      background: rgba(61,122,85,0.06);
+      border-left: 2px solid rgba(61,122,85,0.32);
+      padding: 14px 18px;
+      margin: 24px auto 28px;
+      max-width: 540px;
+      text-align: left;
+      border-radius: 2px;
+    }
+    .cite-block .cite-label {
+      display: block;
+      font-size: 9px; letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(31,61,42,0.5);
+      margin-bottom: 6px;
+    }
+    .colophon {
+      font-family: 'Goudy Bookletter 1911', 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: rgba(31,61,42,0.55);
+      margin-top: 18px;
+    }
+    .colophon a {
+      color: #3d7a55;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(61,122,85,0.32);
+    }
+    .colophon a:hover { color: #1f3d2a; border-bottom-color: #1f3d2a; }
+
+    /* ── Floating side TOC (desktop only) ── */
+    #toc {
+      position: fixed; top: 50%; right: 32px;
+      transform: translateY(-50%);
+      z-index: 20;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px; letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(236,230,212,0.42);
+      display: flex; flex-direction: column; gap: 9px;
+      pointer-events: auto;
+    }
+    #toc .toc-row {
+      display: flex; align-items: center; gap: 9px;
+      cursor: pointer;
+      transition: color 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc .toc-row:hover { color: #aceeC0; }
+    #toc .toc-row .toc-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(236,230,212,0.28);
+      transition: background 0.2s, transform 0.2s;
+    }
+    #toc .toc-row:hover .toc-dot,
+    #toc .toc-row.active .toc-dot { background: #aceeC0; }
+    #toc .toc-row.active { color: rgba(192,244,208,0.85); }
+    #toc .toc-row .toc-num { opacity: 0.55; min-width: 14px; }
+    @media (max-width: 1180px) { #toc { display: none; } }
+
+    /* Scroll progress bar */
+    #progress {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 2px; z-index: 31;
+      background: transparent;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, rgba(172,238,192,0.6), #aceeC0);
+      transition: width 80ms linear;
+      box-shadow: 0 0 12px rgba(172,238,192,0.45);
+    }
+  </style>
+</head>
+<body>
+  <iframe id="bg-frame" src="Living Layers.html" aria-hidden="true"></iframe>
+  <div id="bg-fade"></div>
+
+  <div id="progress"><div id="progress-bar"></div></div>
+
+  <nav id="topbar">
+    <div class="tb-left">
+      <span class="tb-dot"></span>
+      <a href="/">datahub</a>
+      <span class="tb-mid">/ paper</span>
+    </div>
+    <div class="tb-right">
+      <a href="/">← back</a>
+    </div>
+  </nav>
+
+  <nav id="toc" aria-label="Sections">
+    <a class="toc-row" href="#abstract"><span class="toc-dot"></span><span class="toc-num">·</span><span>abstract</span></a>
+    <a class="toc-row" href="#s1"><span class="toc-dot"></span><span class="toc-num">01</span><span>introduction</span></a>
+    <a class="toc-row" href="#s2"><span class="toc-dot"></span><span class="toc-num">02</span><span>prerequisites</span></a>
+    <a class="toc-row" href="#s3"><span class="toc-dot"></span><span class="toc-num">03</span><span>state of data</span></a>
+    <a class="toc-row" href="#s4"><span class="toc-dot"></span><span class="toc-num">04</span><span>ontology</span></a>
+    <a class="toc-row" href="#s5"><span class="toc-dot"></span><span class="toc-num">05</span><span>open · incentives</span></a>
+    <a class="toc-row" href="#s6"><span class="toc-dot"></span><span class="toc-num">06</span><span>open problems</span></a>
+    <a class="toc-row" href="#s7"><span class="toc-dot"></span><span class="toc-num">07</span><span>invitation</span></a>
+  </nav>
+
+  <article id="paper">
+    <!-- botanical corner ornaments (top-left is the base; tr/bl/br flip via CSS) -->
+    <svg class="corner-ornament tl" viewBox="0 0 130 130" fill="none" aria-hidden="true">
+      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
+        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
+        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
+        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
+      </g>
+      <g fill="#5fa085" opacity="0.78">
+        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
+        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
+        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
+        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
+      </g>
+      <g fill="#f5b945" opacity="0.78">
+        <circle cx="66" cy="6" r="1.8"/>
+        <circle cx="24" cy="28" r="1.4"/>
+      </g>
+      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
+        <path d="M6 76 Q2 80 4 86"/>
+      </g>
+    </svg>
+    <svg class="corner-ornament tr" viewBox="0 0 130 130" fill="none" aria-hidden="true">
+      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
+        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
+        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
+        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
+      </g>
+      <g fill="#5fa085" opacity="0.78">
+        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
+        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
+        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
+        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
+      </g>
+      <g fill="#f5b945" opacity="0.78">
+        <circle cx="66" cy="6" r="1.8"/>
+        <circle cx="24" cy="28" r="1.4"/>
+      </g>
+      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
+        <path d="M6 76 Q2 80 4 86"/>
+      </g>
+    </svg>
+    <svg class="corner-ornament bl" viewBox="0 0 130 130" fill="none" aria-hidden="true">
+      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
+        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
+        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
+        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
+      </g>
+      <g fill="#5fa085" opacity="0.78">
+        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
+        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
+        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
+        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
+      </g>
+      <g fill="#f5b945" opacity="0.78">
+        <circle cx="66" cy="6" r="1.8"/>
+        <circle cx="24" cy="28" r="1.4"/>
+      </g>
+      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
+        <path d="M6 76 Q2 80 4 86"/>
+      </g>
+    </svg>
+    <svg class="corner-ornament br" viewBox="0 0 130 130" fill="none" aria-hidden="true">
+      <g stroke="#3d7a55" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7">
+        <path d="M0 70 Q14 56 28 50 Q44 44 52 26 Q56 14 66 6"/>
+        <path d="M28 50 Q34 38 24 28" opacity="0.65"/>
+        <path d="M52 26 Q64 22 72 30" opacity="0.65"/>
+      </g>
+      <g fill="#5fa085" opacity="0.78">
+        <path d="M16 60 Q10 52 14 42 Q24 46 22 58 Q20 64 16 60 Z"/>
+        <path d="M40 36 Q34 28 40 18 Q50 22 48 32 Q46 38 40 36 Z"/>
+        <path d="M58 16 Q56 8 64 4 Q70 10 66 18 Q62 22 58 16 Z"/>
+        <path d="M72 30 Q80 28 82 36 Q76 40 70 36 Z"/>
+      </g>
+      <g fill="#f5b945" opacity="0.78">
+        <circle cx="66" cy="6" r="1.8"/>
+        <circle cx="24" cy="28" r="1.4"/>
+      </g>
+      <g stroke="#5fa085" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.55">
+        <path d="M6 76 Q2 80 4 86"/>
+      </g>
+    </svg>
+
+    <!-- arxiv-style preprint id -->
+    <div class="preprint-id">
+      <span class="pid-line pid-class">datahub.lat : 2026.01</span>
+      <span class="pid-line">[cs.CY / cs.AI]</span>
+      <span class="pid-line">working paper · v1</span>
+    </div>
+
+    <!-- solarpunk sun ornament — disk, rays, botanical cradle -->
+    <svg class="sun-ornament" viewBox="0 0 108 108" fill="none" aria-hidden="true">
+      <defs>
+        <radialGradient id="sun-core" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"  stop-color="#fff0c0"/>
+          <stop offset="50%" stop-color="#f5b945"/>
+          <stop offset="100%" stop-color="#c9831f"/>
+        </radialGradient>
+        <radialGradient id="sun-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"  stop-color="#f5b945" stop-opacity="0.45"/>
+          <stop offset="60%" stop-color="#f5b945" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#f5b945" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- outer warm glow -->
+      <circle cx="54" cy="50" r="44" fill="url(#sun-glow)"/>
+      <!-- long rays -->
+      <g stroke="#c9831f" stroke-width="1.3" stroke-linecap="round" opacity="0.88">
+        <line x1="54" y1="6"  x2="54" y2="16"/>
+        <line x1="54" y1="84" x2="54" y2="94"/>
+        <line x1="6"  y1="50" x2="16" y2="50"/>
+        <line x1="92" y1="50" x2="102" y2="50"/>
+        <line x1="20" y1="16" x2="27" y2="23"/>
+        <line x1="81" y1="77" x2="88" y2="84"/>
+        <line x1="88" y1="16" x2="81" y2="23"/>
+        <line x1="20" y1="84" x2="27" y2="77"/>
+      </g>
+      <!-- short rays between -->
+      <g stroke="#d99428" stroke-width="1" stroke-linecap="round" opacity="0.55">
+        <line x1="37" y1="9"  x2="39" y2="17"/>
+        <line x1="71" y1="9"  x2="69" y2="17"/>
+        <line x1="9"  y1="33" x2="17" y2="35"/>
+        <line x1="9"  y1="67" x2="17" y2="65"/>
+        <line x1="99" y1="33" x2="91" y2="35"/>
+        <line x1="99" y1="67" x2="91" y2="65"/>
+        <line x1="37" y1="91" x2="39" y2="83"/>
+        <line x1="71" y1="91" x2="69" y2="83"/>
+      </g>
+      <!-- sun disk -->
+      <circle cx="54" cy="50" r="15" fill="url(#sun-core)"/>
+      <!-- inner highlight -->
+      <circle cx="49" cy="45" r="4" fill="#fff5d0" opacity="0.6"/>
+      <!-- botanical cradle: stem + leaves + tiny bud -->
+      <g fill="none" stroke="#3d7a55" stroke-width="1.1" stroke-linecap="round" opacity="0.85">
+        <path d="M30 76 Q42 86 54 84 Q66 86 78 76"/>
+        <path d="M54 84 L54 96"/>
+      </g>
+      <g fill="#5fa085" opacity="0.85">
+        <path d="M30 76 Q22 72 22 64 Q30 66 33 74 Z"/>
+        <path d="M78 76 Q86 72 86 64 Q78 66 75 74 Z"/>
+        <ellipse cx="44" cy="83" rx="5" ry="2" transform="rotate(-15 44 83)"/>
+        <ellipse cx="64" cy="83" rx="5" ry="2" transform="rotate(15 64 83)"/>
+      </g>
+      <g fill="#f5b945" opacity="0.85">
+        <circle cx="54" cy="97" r="2"/>
+      </g>
+    </svg>
+
+    <h1 class="paper-title">The Data Hub</h1>
+    <p class="paper-subtitle">An Open Dataset Layer for AI in Latin America</p>
+
+    <div class="authors">
+      <span class="a-name">Mauro<sup>†</sup></span> · <span class="a-name">Marian<sup>†</sup></span> · <span class="a-name">Francis<sup>†</sup></span> · <span class="a-name">Kenn<sup>†</sup></span> · <span class="a-name">Francis Perelman<sup>‡</sup></span>
+    </div>
+    <div class="affiliations">
+      <span class="aff-marker">†</span>SURUS Team &nbsp;·&nbsp; <span class="aff-marker">‡</span>Independent
+    </div>
+    <div class="paper-date">18 June 2026 · Buenos Aires</div>
+
+    <!-- vine divider — richer botanical -->
+    <svg class="vine-divider" viewBox="0 0 320 36" fill="none" aria-hidden="true">
+      <!-- main stem -->
+      <path d="M0 18 Q80 4 160 18 T320 18" stroke="#3d7a55" stroke-width="1" fill="none" opacity="0.72"/>
+      <!-- central flower with golden heart -->
+      <g transform="translate(160 18)">
+        <g fill="#3d7a55" opacity="0.82">
+          <path d="M-2 0 Q-7 -7 0 -11 Q7 -7 2 0 Z"/>
+          <path d="M2 0 Q7 7 0 11 Q-7 7 -2 0 Z"/>
+          <path d="M0 -2 Q-8 -3 -10 3 Q-6 5 -2 1 Z"/>
+          <path d="M0 2 Q8 3 10 -3 Q6 -5 2 -1 Z"/>
+        </g>
+        <circle r="2" fill="#f5b945" opacity="0.92"/>
+        <circle r="0.9" fill="#fff0c0" opacity="0.85"/>
+      </g>
+      <!-- side leaves -->
+      <g fill="#5fa085" opacity="0.72">
+        <ellipse cx="40" cy="22" rx="4.5" ry="1.7" transform="rotate(15 40 22)"/>
+        <ellipse cx="62" cy="10"  rx="6"   ry="2.2" transform="rotate(-22 62 10)"/>
+        <ellipse cx="100" cy="24" rx="5"   ry="1.9" transform="rotate(-10 100 24)"/>
+        <ellipse cx="220" cy="12" rx="5"   ry="1.9" transform="rotate(12 220 12)"/>
+        <ellipse cx="258" cy="22" rx="6"   ry="2.2" transform="rotate(22 258 22)"/>
+        <ellipse cx="280" cy="10" rx="4.5" ry="1.7" transform="rotate(-15 280 10)"/>
+      </g>
+      <!-- small berries -->
+      <g fill="#f5b945" opacity="0.78">
+        <circle cx="84"  cy="18" r="1.6"/>
+        <circle cx="236" cy="18" r="1.6"/>
+      </g>
+      <!-- tendrils curling at the ends -->
+      <g stroke="#5fa085" stroke-width="0.7" fill="none" opacity="0.55" stroke-linecap="round">
+        <path d="M28 18 Q22 13 26 8"/>
+        <path d="M292 18 Q298 13 294 8"/>
+      </g>
+    </svg>
+
+    <!-- ABSTRACT -->
+    <section id="abstract">
+      <div class="abstract-label">Abstract</div>
+      <div class="abstract">
+        <p>Latin America is missing two foundational layers required to develop its own AI: a <strong>dataset layer</strong> and a <strong>benchmark layer</strong>. The cost of their absence is dual. Many AI tasks are genuinely global &mdash; coding assistance, general-purpose reasoning, mathematics &mdash; and for these the region can reasonably consume what is built elsewhere. But many tasks are not: they depend on regional languages, domains, value systems, and economic realities. On the <strong>public-institution side</strong>, models trained elsewhere encode foreign value systems, languages, historical narratives, and incentives &mdash; affecting how citizens are represented, served, and governed. On the <strong>industry side</strong>, the same models are optimized for tasks that may have little economic relevance to Latin America, and can fail silently on tasks that do: a pest-classification model trained on European or North American agriculture will not reliably identify the pests that determine harvests in Argentina or Brazil. The result is not only a productivity gap but a <strong>loss of sovereign capacity</strong> over a technology that is becoming infrastructure. A region that cannot build or evaluate AI for its own industries, languages, and institutions cannot capture the productivity gains of this technology, nor exercise meaningful agency over how it is used inside its borders.</p>
+
+        <p>These two layers are not optional infrastructure &mdash; they are the <strong>minimum prerequisites</strong> for both building and judging AI systems. Without datasets we cannot train our own models, agents, or downstream systems. Without benchmarks we cannot evaluate them, and &mdash; just as critically &mdash; we cannot evaluate the foreign systems we are already using. If no benchmark exists for Latin American historical knowledge, there is no way to know whether GPT-5 or DeepSeek actually represent the region accurately. Public institutions need these benchmarks to make informed procurement and policy decisions; industries need them to avoid adopting models that underperform silently on regional tasks; and the region as a whole needs both layers to train AI systems that reflect its own languages, contexts, incentives, and values.</p>
+
+        <p>The dataset layer faces <strong>two compounding problems</strong>. The first is <strong>discovery</strong>: LATAM datasets do exist &mdash; they sit on Hugging Face, in the Mozilla Foundation, in the Internet Archive, in Chinese data hubs, and in the appendices of university papers &mdash; but there is no shared index pointing to them. The second is <strong>supply</strong>: even taken together, the volume of LATAM data is far below what the United States, China, and Europe have accumulated, because those regions have spent years actively pushing institutions, companies, and researchers to publish data into shared hubs, and we have not. The two problems reinforce each other. There is no place to publish a dataset where the contributor sees a return on the act of contributing, so fewer datasets get published; and because few datasets get published, no critical mass forms to motivate the next contributor. The Data Hub is designed to break this loop from both ends &mdash; by indexing what already exists, and by making contribution a visible, rewarded act.</p>
+
+        <p>The Data Hub is organized around a <strong>task-first ontology</strong>: three nested levels of specificity that mirror how a practitioner actually searches for data. <strong>Task</strong> comes first, because an AI model is fundamentally a program for a task &mdash; transcription, classification, translation, summarization. <strong>Domain</strong> comes second: a transcription dataset becomes useful when it is specifically <em>medical</em> transcription or <em>legal</em> transcription. <strong>Language</strong> comes third, sub-typed by regional variant: medical transcription in <em>Rioplatense Spanish</em> is not interchangeable with medical transcription in <em>Castilian Spanish</em> or <em>Brazilian Portuguese</em>. A practitioner choosing a dataset to train or benchmark a model walks this hierarchy from general to specific &mdash; task, then domain, then language and variant &mdash; and the Data Hub's ontology is designed so that walk is the natural one.</p>
+
+        <p>We argue for a <strong>multipolar AI world</strong> &mdash; one in which AI is developed across many regions, by many communities, reflecting many sets of values &mdash; and we believe Latin America should be one of those poles, with its own technology and its own agency. This is not an argument against collaboration with other regions; it is an argument <em>for</em> LATAM contributing to that collaboration on its own terms. From this position, the Data Hub must be <strong>open by design</strong> and <strong>incentive-driven by construction</strong>. Different regions have taken different routes: some have built AI ecosystems that are largely closed and proprietary, others have built ecosystems that are open and collaborative. We believe the open route is the right one for Latin America &mdash; because a region without incumbent hyperscalers moves faster through a shared commons than through closed silos, and because a commons that nobody owns and everyone owns only stays alive when contributors are rewarded. Each new dataset compounds the value of every prior contribution, and contributors gain visibility through mechanisms like the contributing-organizations carousel, which converts participation into brand and institutional recognition. The Data Hub is designed as a continuum, not a static catalog.</p>
+
+        <p>Many questions remain open. <strong>Regulatory heterogeneity</strong> across LATAM jurisdictions &mdash; data protection, copyright, and public-data access regimes differ country by country. <strong>Shared standards</strong> for dataset metadata, licensing, and quality do not yet exist for the region. <strong>Collaboration norms</strong> &mdash; attribution when datasets are improved by other contributors, versioning as datasets evolve, arbitration when a community contests how it is represented, and the review process for entering the hub &mdash; remain to be defined. And the <strong>institutional incentives</strong> required for universities, governments, and public bodies to publish data they currently keep internal are still emerging. This paper does not resolve these questions. It is a <strong>kickstart</strong> by the Surus team &mdash; a working artifact and a position &mdash; and an explicit invitation to researchers, institutions, and companies across the region to help shape what the dataset layer for LATAM AI should become.</p>
+      </div>
+    </section>
+
+    <!-- 1. INTRODUCTION -->
+    <section id="s1" class="body-section">
+      <h2 class="sec-title"><span class="sec-num">01</span> Introduction</h2>
+      <p class="body first">The state of AI in Latin America today is one of consumption. Latin Americans use AI models built elsewhere, trained on data collected elsewhere, evaluated against tasks defined elsewhere. This consumption is not, in itself, the problem &mdash; many AI capabilities are universal, and a region that consumes well-built foreign technology can still be productive. The problem is that Latin America today <em>cannot do anything else</em>. It cannot build its own AI, because it lacks the dataset layer required to train models. It cannot evaluate AI, because it lacks the benchmark layer required to judge whether any model &mdash; foreign or domestic &mdash; actually performs against the tasks the region cares about.</p>
+
+      <p class="body">This paper introduces the <span class="term">Data Hub</span>, an open initiative by the Surus team to build the dataset layer for AI in Latin America. We describe what is broken about the current landscape of LATAM datasets, why the existing taxonomies for organizing them are wrong, what ontology should replace them, why the Hub must be open and incentive-driven by construction, and what problems remain open after this first step. We treat the benchmark layer as an equally necessary and parallel project, addressed in companion work; the two layers depend on each other and a region that has built only one of them is still structurally dependent.</p>
+
+      <p class="body">The cost of LATAM's missing dataset and benchmark layers is dual, and it is important to see both halves clearly.</p>
+
+      <p class="body">On the <strong>public-institution side</strong>, models trained elsewhere encode foreign value systems, languages, historical narratives, and incentives. When a public agency procures a language model to handle citizen correspondence, the model arrives pre-trained on a corpus that overwhelmingly reflects the conventions, references, and biases of the regions where that corpus was assembled. When a school district evaluates an educational chatbot, that chatbot's notion of a good answer was shaped by curricula and pedagogical traditions developed elsewhere. These are not malicious failures &mdash; they are silent ones. The model works. It returns plausible text. It is simply optimized for a different set of citizens, students, and institutions than the ones using it.</p>
+
+      <p class="body">On the <strong>industry side</strong>, the failure mode is different but structurally identical. Many AI tasks are genuinely global &mdash; coding assistance, mathematical reasoning, general-purpose summarization &mdash; and for these the region can reasonably consume what is built elsewhere. But many tasks are not. A pest-classification model trained on European or North American agricultural imagery will not reliably identify the species destroying a Colombian coffee crop, a southern-cone wheat field, or a Brazilian soybean harvest. A legal-document summarization model trained primarily on US case law will miss the procedural structure of an Argentine civil filing. A medical NER model trained on English clinical notes will not recognize the terminology used in a Mexican electronic health record. These failures are not graceful degradation &mdash; they are silent miscalls on the exact tasks the regional economy needs AI to perform.</p>
+
+      <p class="body">The sum of these dual costs is a <span class="term">loss of sovereign capacity</span> over a technology that is becoming infrastructure. AI is not merely a product category; it is becoming the layer through which governments make decisions, citizens access information, and industries operate. A region without its own dataset and benchmark layers cannot build, evaluate, or steer that layer. It cannot capture the productivity gains the technology offers, nor exercise meaningful agency over how it is used inside its own borders. The Data Hub exists to begin closing that gap.</p>
+    </section>
+
+    <!-- 2. PREREQUISITES -->
+    <section id="s2" class="body-section">
+      <h2 class="sec-title"><span class="sec-num">02</span> Why Both Layers Are Prerequisites: Training and Evaluation</h2>
+      <p class="body first">Datasets and benchmarks are not optional infrastructure. They are the <span class="term">minimum prerequisites</span> for both building AI systems and judging them, and the absence of either layer disables a category of work that LATAM cannot afford to leave undone.</p>
+
+      <p class="body"><strong>Without datasets we cannot train.</strong> Every model, agent, and downstream AI system depends on data. This is true of foundation models trained from scratch, of fine-tuned task-specific systems, of retrieval-augmented systems that ground generation in a corpus, and of agents that learn from interaction logs. The hyperscalers that dominate AI today did not arrive there by clever architecture alone; they arrived by spending years assembling, cleaning, and structuring corpora of unprecedented scale. Whatever LATAM eventually builds &mdash; whether sovereign foundation models or task-specialized systems on top of foreign bases &mdash; that work cannot begin without a usable dataset substrate.</p>
+
+      <p class="body"><strong>Without benchmarks we cannot evaluate</strong>, and the implications of this are more strategic than they first appear. Benchmarks serve two distinct constituencies.</p>
+
+      <p class="body">The first is <em>anyone building AI for LATAM</em> &mdash; including LATAM researchers, startups, and large companies &mdash; who needs to know whether what they have built actually works. A model is only useful if its performance can be measured against tasks that matter to its users. Without LATAM-specific benchmarks, regional AI development proceeds blind: developers either use foreign benchmarks (which measure performance on the wrong tasks) or build private internal evaluations (which cannot be compared across organizations and so produce no shared regional knowledge).</p>
+
+      <p class="body">The second is <em>anyone procuring or deploying foreign AI in LATAM</em> &mdash; public institutions, government agencies, and large companies &mdash; who needs to know whether a foreign model is fit for purpose. This is where the absence of benchmarks is most damaging. Consider a concrete case: if no benchmark exists for Latin American historical knowledge, there is no way for a ministry of education to determine whether GPT-5 or DeepSeek actually represent the region's history accurately enough to be used in a state curriculum. If no benchmark exists for Rioplatense Spanish legal summarization, there is no way for an Argentine court system to know which model would handle its document load best. The decision then defaults to whatever the vendor's marketing claims &mdash; which is a poor substitute for measurement.</p>
+
+      <p class="body">Public institutions across LATAM therefore need benchmarks for procurement and policy. Industries need benchmarks to avoid adopting models that underperform silently on the tasks their business depends on. And the region as a whole needs both layers &mdash; data and benchmarks &mdash; to train AI systems that reflect its own languages, contexts, incentives, and values.</p>
+
+      <p class="body">The Data Hub focuses on the dataset layer. The two layers are interdependent: a benchmark is a labeled dataset evaluated against a model, and many of the same data-collection efforts that produce training corpora also produce evaluation sets. But it is useful to name them as distinct layers because they answer distinct questions &mdash; datasets answer <em>what can we train on?</em>, benchmarks answer <em>how do we know if it works?</em> &mdash; and a region that has built only one of them is still structurally dependent.</p>
+    </section>
+
+    <!-- 3. STATE OF DATA -->
+    <section id="s3" class="body-section">
+      <h2 class="sec-title"><span class="sec-num">03</span> The State of LATAM Datasets: Discovery and Supply</h2>
+      <p class="body first">The dataset layer faces two compounding problems. They are usually discussed separately, but they reinforce each other and must be addressed together.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">3.1</span> Discovery</h3>
+      <p class="body">LATAM datasets do exist. The problem is that they are scattered across at least six distinct kinds of locations, with no shared index pointing to them:</p>
+      <ul class="body-list">
+        <li><strong>General-purpose hubs</strong> like Hugging Face host LATAM datasets, but these are buried under foreign-language defaults, and the platform's organization-by-modality assumes a practitioner already knows the dataset they want.</li>
+        <li><strong>Foundational web archives</strong> such as the Mozilla Foundation's Common Voice contain region-specific speech data, but a researcher looking for, say, Rioplatense Spanish transcription data has no way to navigate from <em>&ldquo;I need this&rdquo;</em> to <em>&ldquo;this is where it lives&rdquo;</em> without already knowing the project name.</li>
+        <li><strong>The Internet Archive</strong> holds digitized regional materials of significant historical and linguistic value, but discoverability there is governed by full-text search rather than by AI-task affordance.</li>
+        <li><strong>Chinese data hubs</strong> are an increasingly important locus for multilingual datasets, and several LATAM-relevant corpora have been published there, but linguistic and platform friction keep them invisible to most regional practitioners.</li>
+        <li><strong>The appendices of academic papers</strong> are perhaps the largest single source of LATAM datasets &mdash; built by graduate students at regional universities, used once for the paper's experiments, and then effectively abandoned to the archival half-life of a PDF.</li>
+        <li><strong>Internal institutional archives</strong> hold significant volumes of LATAM-relevant data &mdash; government records, medical archives, court documents, university research &mdash; that have never been published as datasets at all.</li>
+      </ul>
+      <p class="body">The consequence is that a practitioner asking <em>&ldquo;which datasets can I use to train a model for medical transcription in Argentinian Spanish?&rdquo;</em> has no way to answer the question except by personal network, accident, or weeks of search. This is not a failure of any individual platform; it is the absence of a regional index.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">3.2</span> Supply</h3>
+      <p class="body">Even if every existing LATAM dataset were perfectly indexed tomorrow, the total volume would remain substantially below what the United States, China, and Europe have accumulated. This is not because LATAM researchers and institutions are less capable. It is because those regions have spent years actively pushing institutions, companies, and researchers to publish data into shared hubs &mdash; through grant requirements, government data initiatives, corporate open-data programs, academic publication norms, and the gravitational pull of established platforms. LATAM has not.</p>
+      <p class="body">The result is a deficit that compounds annually. Every year that passes without an active dataset-creation effort in LATAM is a year in which the gap with other regions widens.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">3.3</span> The Reinforcing Loop</h3>
+      <p class="body">These two problems &mdash; discovery and supply &mdash; are not independent. They reinforce each other in a loop that, left alone, would persist indefinitely.</p>
+      <p class="body">There is no place to publish a LATAM dataset where the contributor sees a return on the act of contributing. A researcher who spends months curating a Rioplatense Spanish legal corpus has nowhere to publish it that is both <em>visible to the regional AI community</em> and <em>attributable to the contributor in a way that benefits their career or institution</em>. The dataset gets dropped into a global hub with default settings, where it is indistinguishable from thousands of others. So fewer datasets get published.</p>
+      <p class="body">And because few datasets get published, no critical mass forms. There is no LATAM dataset community in the way that there is, for example, a French NLP community or a Chinese vision community. There is no flywheel of <em>&ldquo;I see other organizations contributing, so my contribution will be seen alongside theirs.&rdquo;</em> So the next contributor is not motivated. The loop closes.</p>
+      <p class="body">The Data Hub is designed to break this loop from both ends. On the discovery side, it indexes what already exists, surfacing scattered datasets through a single LATAM-first ontology. On the supply side, it makes contribution a visible, rewarded act &mdash; through mechanisms detailed in Section 5 &mdash; so that the act of publishing a dataset produces a return for the contributor.</p>
+    </section>
+
+    <!-- 4. ONTOLOGY -->
+    <section id="s4" class="body-section">
+      <h2 class="sec-title"><span class="sec-num">04</span> A Task-First Ontology</h2>
+      <p class="body first">Existing dataset catalogs almost universally organize entries by <strong>input modality</strong> (text, image, audio, video) or by <strong>target model</strong> (this dataset is for fine-tuning a specific architecture; this one for training a specific family). Both are wrong for a practitioner.</p>
+      <p class="body">A practitioner does not start from <em>&ldquo;I have an image&rdquo;</em> or <em>&ldquo;I want to use model X.&rdquo;</em> They start from <em>&ldquo;I need to build a system that does Y.&rdquo;</em> The relevant taxonomy is therefore organized around what an AI system <em>does</em> &mdash; its <span class="term">task</span> &mdash; and progressively refines by domain and language. The Data Hub adopts a <span class="term">task-first ontology</span> with three nested levels of specificity.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">4.1</span> Task</h3>
+      <p class="body">An AI model is fundamentally a program for a task &mdash; transcription, classification, translation, summarization, question answering, information extraction, generation, retrieval. This is the first axis along which a practitioner specifies their need, because no further axis matters until the task is fixed. A medical transcription dataset is useless to someone building a legal classifier, regardless of language, regardless of modality.</p>
+      <p class="body">In the Data Hub's registry, the task taxonomy is task-oriented at the level of <em>what kind of work the AI system performs</em>, not at the level of model architecture or family. A dataset is tagged with the tasks it can support &mdash; and one dataset may support several.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">4.2</span> Domain</h3>
+      <p class="body">Within a task, the second axis is domain. A transcription dataset becomes useful when it is specifically <em>medical</em> transcription, <em>legal</em> transcription, <em>broadcast journalism</em> transcription, or <em>educational</em> transcription. The vocabulary differs. The acoustic conditions differ. The annotation conventions differ. A model trained on medical transcription will produce uneven results on legal audio, even within the same language.</p>
+      <p class="body">Domain is therefore the next refinement after task. A practitioner asking <em>&ldquo;is there a transcription dataset I can use?&rdquo;</em> should be guided immediately to <em>&ldquo;what domain do you need?&rdquo;</em> because that determines whether any given candidate is actually usable.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">4.3</span> Language and Regional Variant</h3>
+      <p class="body">The third axis is language &mdash; and within language, regional variant. This is where LATAM-first design departs most sharply from the conventions of global hubs, which typically treat <em>Spanish</em> as a single language tag and <em>Portuguese</em> as another.</p>
+      <p class="body">Medical transcription in Rioplatense Spanish is not interchangeable with medical transcription in Castilian Spanish. The clinical vocabulary differs. The patient-facing register differs. The acoustic patterns differ. A model trained on one will work imperfectly on the other, and silently. The same is true of Brazilian Portuguese versus European Portuguese, of Mexican Spanish versus Chilean Spanish, and across the indigenous LATAM languages where the very notion of <em>&ldquo;variant&rdquo;</em> requires careful definition.</p>
+      <p class="body">The Data Hub's language ontology is therefore LATAM-first by construction. Spanish is decomposed by regional variant. Portuguese is decomposed by Brazilian versus European. Indigenous LATAM languages are first-class entries, not long-tail afterthoughts behind a generic <em>&ldquo;low-resource&rdquo;</em> filter.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">4.4</span> The Hierarchy in Practice</h3>
+      <p class="body">A practitioner walks the hierarchy from general to specific: task, then domain, then language and variant. <em>I need a transcription dataset &rarr; for medical use &rarr; in Rioplatense Spanish.</em> Each step narrows the candidate set. The Data Hub is designed so that this walk is the natural one.</p>
+      <p class="body">The same ontology serves the benchmark layer. When the benchmark layer is built, it will inherit this structure: a benchmark for medical transcription in Rioplatense Spanish is the natural evaluation companion to a dataset described at the same level of specificity. This parallelism is intentional.</p>
+    </section>
+
+    <!-- 5. OPEN + INCENTIVES -->
+    <section id="s5" class="body-section">
+      <h2 class="sec-title"><span class="sec-num">05</span> Open by Design, Incentive-Driven by Construction</h2>
+      <p class="body first">The Data Hub's design follows from a position about what kind of AI world we want to live in, and what kind of role Latin America should play in it.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">5.1</span> A Multipolar AI World, with LATAM as One Pole</h3>
+      <p class="body">We argue for a <span class="term">multipolar AI world</span> &mdash; one in which AI is developed across many regions, by many communities, reflecting many sets of values. We believe Latin America should be one of those poles, with its own technology and its own agency. AI built in many places by many communities is more robust, more representative, and more aligned with humanity's actual diversity than AI built in a handful of places by a handful of organizations.</p>
+      <p class="body">This is not an argument against collaboration with other regions. It is an argument <em>for</em> LATAM contributing to that collaboration on its own terms &mdash; as a contributor, not only as a consumer. A region that builds its own dataset and benchmark layers can collaborate from a position of capacity. A region that depends entirely on foreign infrastructure can only collaborate from a position of dependence.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">5.2</span> Why Open</h3>
+      <p class="body">From the multipolar position, the question of <em>how</em> LATAM should build its AI infrastructure becomes a strategic choice. Different regions have taken different routes. Some have built AI ecosystems that are largely closed and proprietary, with high-value datasets and models held inside a small number of large organizations. Others have built ecosystems that are open and collaborative, with datasets, models, and tools published into shared commons. Both routes can work; both have produced significant AI capability.</p>
+      <p class="body">We believe the open route is the right one for Latin America, for two reasons.</p>
+      <p class="body">First, <strong>a region without incumbent hyperscalers moves faster through a shared commons than through closed silos</strong>. The closed model works when a few large organizations already hold most of the capital, talent, and data; their internal accumulation outpaces any external collaboration. LATAM is not in that position. No LATAM organization has the capital or data scale of a North American hyperscaler. What LATAM does have is many capable researchers, many institutions with relevant data, and many companies with regional expertise &mdash; distributed across the region. The fastest way to assemble these into AI capacity is to pool them in a commons, not to silo them inside individual organizations that cannot reach critical mass alone.</p>
+      <p class="body">Second, <strong>open invites contribution; closed forbids it</strong>. The Data Hub's value comes from network effects. The more datasets it indexes, the more useful it is to practitioners; the more practitioners use it, the more contributors are motivated to publish. None of this flywheel exists in a closed-by-default model.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">5.3</span> Why Incentive-Driven</h3>
+      <p class="body">A commons is not self-sustaining by virtue of being a commons. A commons that nobody owns and everyone owns only stays alive when contributors are rewarded for contributing. Without explicit incentives, the commons becomes a tragedy of the commons in reverse: nobody publishes, because nobody else is publishing.</p>
+      <p class="body">The Data Hub's incentive design rests on two principles.</p>
+      <p class="body"><strong>Compounding value.</strong> Each new dataset compounds the value of every prior contribution, because the index becomes more complete and the ontology more populated. A contributor who publishes a dataset today is contributing not only their own work but adding to a substrate that future contributors will build on. This is the basic logic of any open infrastructure: the early contributors are the ones who make the later contributions worth making.</p>
+      <p class="body"><strong>Visibility as reward.</strong> A contributor &mdash; whether a university lab, a public institution, a private company, or an independent researcher &mdash; gains something concrete from publishing into the Hub: visibility within the regional AI community, attribution attached to their dataset, and brand recognition for their organization. The Data Hub's <span class="term">contributing-organizations carousel</span> is one of the concrete mechanisms for this: organizations that contribute datasets are surfaced on the Hub itself, converting the act of contribution into ongoing institutional recognition. For public institutions especially &mdash; universities, ministries, research agencies &mdash; brand visibility within the LATAM AI community is a meaningful return that is otherwise difficult to capture.</p>
+      <p class="body">These mechanisms are first-pass. As the Hub grows, additional incentive structures will be needed &mdash; for sustained contribution, for dataset quality, for community-led curation. We treat the incentive layer as something to evolve, not finalize.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">5.4</span> A Continuum, Not a Catalog</h3>
+      <p class="body">The Data Hub is designed as a <span class="term">continuum</span> rather than a static catalog. A catalog is a snapshot: a list of what existed at the time it was assembled, going stale from the moment it is published. A continuum is a living system, with active contribution, active curation, and active growth.</p>
+      <p class="body">Treating the Hub as a continuum has concrete design consequences. The ontology must be extensible &mdash; new tasks, new domains, new language variants must be addable without breaking existing entries. Versioning must be first-class &mdash; datasets evolve, and the Hub must record that evolution. The contribution path must be low-friction &mdash; a researcher who has just produced a dataset must be able to publish it in minutes, not weeks. And the social layer of the Hub &mdash; the relationships among contributors, users, and curators &mdash; must be visible and supported, not buried under interface friction.</p>
+    </section>
+
+    <!-- 6. OPEN PROBLEMS -->
+    <section id="s6" class="body-section">
+      <h2 class="sec-title"><span class="sec-num">06</span> Open Problems</h2>
+      <p class="body first">The Data Hub does not resolve every question implied by the dataset layer it begins to build. Several questions remain genuinely open, and we believe naming them honestly is more useful than papering over them.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">6.1</span> Regulatory Heterogeneity</h3>
+      <p class="body">Data protection, copyright, and public-data access regimes differ country by country across LATAM. A dataset assembled from public health records in one country may be uncomplicated to publish; the same effort in a neighboring country may be legally fraught. Copyright frameworks around scraped web data, government open-data mandates, indigenous-language data sovereignty, and personal-data protection statutes do not align across borders. The Data Hub cannot resolve these &mdash; they are matters of national law &mdash; but it can and must surface the licensing and legal-jurisdiction information of every dataset it indexes, so that a practitioner deciding whether to use a dataset can make that decision with the relevant legal context visible.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">6.2</span> Shared Standards</h3>
+      <p class="body">There are no shared standards for dataset metadata, licensing, or quality in LATAM. Two datasets nominally about <em>&ldquo;Spanish transcription&rdquo;</em> may use entirely incompatible annotation schemas, license under entirely different terms, and apply entirely different quality bars to what counts as a clean example. Without shared standards, datasets cannot be combined, compared, or evaluated against one another. We do not propose a single standard in this paper &mdash; that work is too large for a kickstart &mdash; but we name the gap and treat the Hub's initial metadata schema as a first proposal to be debated, not a final answer.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">6.3</span> Collaboration Norms</h3>
+      <p class="body">Separate from metadata standards, the Hub raises questions about <em>how a commons should be governed</em> that are not yet answered. These include:</p>
+      <ul class="body-list">
+        <li><strong>Attribution.</strong> When organization A contributes a dataset, and organization B improves it (cleans it, adds annotations, fixes errors), how is credit allocated? How is this represented in the Hub?</li>
+        <li><strong>Versioning.</strong> As datasets evolve, how do downstream users &mdash; including model trainers who have already trained on prior versions &mdash; track which version they are working with?</li>
+        <li><strong>Arbitration.</strong> When a community contests how a dataset represents it &mdash; for example, an indigenous community objecting to how their language has been transcribed and tagged &mdash; how is that objection processed, and what authority resolves it?</li>
+        <li><strong>Review.</strong> What review process gates entry into the Hub? Open by default with post-hoc moderation? Curated with pre-publication review? Some hybrid?</li>
+        <li><strong>License inheritance.</strong> When datasets are combined into a new dataset, how do their licenses propagate, and how is this enforced or merely tracked?</li>
+      </ul>
+      <p class="body">We have initial answers to each of these in the Hub's current implementation, but none of them should be treated as final. These are questions for the regional community to decide together.</p>
+
+      <h3 class="subsec-title"><span class="subsec-num">6.4</span> Institutional Incentives</h3>
+      <p class="body">Universities, governments, research agencies, and public bodies across LATAM hold significant volumes of data that would be valuable as published datasets. Most of it does not get published, for a mix of reasons: no career incentive for researchers, no institutional mandate, no clear pathway, no budget for the cleanup work required before release. The Data Hub's visibility mechanisms address part of this &mdash; publishing into the Hub now produces visible recognition &mdash; but the deeper institutional incentive problem requires policy work outside the Hub itself: grant requirements that mandate dataset publication, university promotion criteria that value dataset contributions alongside papers, government open-data policies that treat AI-readable formats as a first-class deliverable. These are matters for the regional academic and policy communities. The Hub is a precondition for these conversations, not a substitute for them.</p>
+    </section>
+
+    <!-- 7. INVITATION -->
+    <section id="s7" class="body-section">
+      <h2 class="sec-title"><span class="sec-num">07</span> A Kickstart and an Invitation</h2>
+      <p class="body first">This paper is a <span class="term">kickstart</span>. It is a working artifact and a position, not a finished proposal. The Surus team has built the first version of the Data Hub &mdash; the ontology, the registry, the initial set of indexed datasets, the contributing-organizations mechanism &mdash; because somebody had to begin, and we believe the dataset layer for LATAM AI is too important to wait for. But the Hub does not belong to us, and it cannot be built by us alone.</p>
+
+      <p class="body">We invite three kinds of contribution.</p>
+
+      <p class="body"><strong>To researchers and institutions holding data:</strong> publish into the Hub. Whether your dataset is the appendix of a paper from three years ago, the working corpus of an active project, or the internal archive of an institution that has never published anything, the Hub is built to receive it. The marginal contribution increases the value of every prior one.</p>
+
+      <p class="body"><strong>To AI practitioners across the region:</strong> use the Hub. The most important signal that the Hub matters is that practitioners are choosing datasets from it, building models against it, and evaluating systems through it. Use is what converts a commons from a directory into infrastructure.</p>
+
+      <p class="body"><strong>To the broader community &mdash; universities, foundations, governments, companies:</strong> help shape what comes next. The ontology will need to evolve. The standards will need to be debated. The collaboration norms will need to be defined. The benchmark layer will need to be built alongside the dataset layer. None of this can be the work of a single team, and none of it should be.</p>
+
+      <p class="body">The dataset layer for Latin American AI will be built by the region, for the region, or it will not be built at all. The Data Hub is one step toward that future. We invite you to take the next one with us.</p>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="paper-footer">
+      <svg class="vine-divider" viewBox="0 0 320 36" fill="none" aria-hidden="true">
+        <!-- mirrored curve -->
+        <path d="M0 18 Q80 32 160 18 T320 18" stroke="#3d7a55" stroke-width="1" fill="none" opacity="0.72"/>
+        <g transform="translate(160 18)">
+          <g fill="#3d7a55" opacity="0.82">
+            <path d="M-2 0 Q-7 -7 0 -11 Q7 -7 2 0 Z"/>
+            <path d="M2 0 Q7 7 0 11 Q-7 7 -2 0 Z"/>
+            <path d="M0 -2 Q-8 -3 -10 3 Q-6 5 -2 1 Z"/>
+            <path d="M0 2 Q8 3 10 -3 Q6 -5 2 -1 Z"/>
+          </g>
+          <circle r="2" fill="#f5b945" opacity="0.92"/>
+          <circle r="0.9" fill="#fff0c0" opacity="0.85"/>
+        </g>
+        <g fill="#5fa085" opacity="0.72">
+          <ellipse cx="40" cy="14"  rx="4.5" ry="1.7" transform="rotate(-15 40 14)"/>
+          <ellipse cx="62" cy="26"  rx="6"   ry="2.2" transform="rotate(22 62 26)"/>
+          <ellipse cx="100" cy="12" rx="5"   ry="1.9" transform="rotate(10 100 12)"/>
+          <ellipse cx="220" cy="24" rx="5"   ry="1.9" transform="rotate(-12 220 24)"/>
+          <ellipse cx="258" cy="14" rx="6"   ry="2.2" transform="rotate(-22 258 14)"/>
+          <ellipse cx="280" cy="26" rx="4.5" ry="1.7" transform="rotate(15 280 26)"/>
+        </g>
+        <g fill="#f5b945" opacity="0.78">
+          <circle cx="84"  cy="18" r="1.6"/>
+          <circle cx="236" cy="18" r="1.6"/>
+        </g>
+        <g stroke="#5fa085" stroke-width="0.7" fill="none" opacity="0.55" stroke-linecap="round">
+          <path d="M28 18 Q22 23 26 28"/>
+          <path d="M292 18 Q298 23 294 28"/>
+        </g>
+      </svg>
+
+      <div class="cite-block">
+        <span class="cite-label">cite as</span>
+SURUS Team &amp; F. Perelman (2026). <em>The Data Hub: An Open Dataset Layer for AI in Latin America.</em> Working paper, datahub.lat:2026.01. Buenos Aires.
+      </div>
+
+      <div class="colophon">
+        Set in EB Garamond &amp; Cinzel · Composed in Buenos Aires · <a href="/">return to the hub →</a>
+      </div>
+    </footer>
+  </article>
+
+  <script>
+    // ── scroll progress bar ──
+    (function () {
+      var bar = document.getElementById('progress-bar');
+      function tick() {
+        var h = document.documentElement;
+        var max = h.scrollHeight - h.clientHeight;
+        var pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+        bar.style.width = pct + '%';
+      }
+      window.addEventListener('scroll', tick, { passive: true });
+      window.addEventListener('resize', tick);
+      tick();
+    })();
+
+    // ── TOC active section highlight ──
+    (function () {
+      var rows = Array.from(document.querySelectorAll('#toc .toc-row'));
+      var sections = rows.map(function (r) {
+        var id = r.getAttribute('href').slice(1);
+        return { row: r, el: document.getElementById(id) };
+      }).filter(function (s) { return s.el; });
+      if (!sections.length) return;
+
+      function update() {
+        var y = window.scrollY + window.innerHeight * 0.35;
+        var active = sections[0];
+        for (var i = 0; i < sections.length; i++) {
+          if (sections[i].el.offsetTop <= y) active = sections[i];
+        }
+        rows.forEach(function (r) { r.classList.remove('active'); });
+        active.row.classList.add('active');
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    })();
+
+    // ── smooth scroll for in-page links ──
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var id = a.getAttribute('href').slice(1);
+        var el = document.getElementById(id);
+        if (!el) return;
+        e.preventDefault();
+        var top = el.getBoundingClientRect().top + window.scrollY - 60;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>
