@@ -124,16 +124,17 @@
     body.resizing, body.resizing * { user-select: none !important; }
     @media (max-width: 760px) { .resize-handle { display: none; } }
 
-    /* header density variants */
-    #paper.density-compact { --pad-top: 36px; }
+    /* header density variants — pad-top sized to clear the preprint-id block
+       (3 lines × 1.7em line-height + top:22px ≈ 68px end edge) */
+    #paper.density-compact { --pad-top: 54px; }
     #paper.density-compact h1.paper-title  { font-size: 24px; }
     #paper.density-compact .paper-subtitle { font-size: 14px; margin-bottom: 14px; }
     #paper.density-compact .authors        { font-size: 13.5px; }
     #paper.density-compact .paper-date     { margin-bottom: 14px; }
     #paper.density-compact .rule-dot       { margin: 12px auto 24px; }
 
-    #paper.density-min { --pad-top: 22px; }
-    #paper.density-min h1.paper-title      { font-size: 18px; margin-bottom: 4px; }
+    #paper.density-min { --pad-top: 38px; }
+    #paper.density-min h1.paper-title      { font-size: 18px; margin: 14px 0 4px; }
     #paper.density-min .paper-subtitle     { font-size: 12px; margin-bottom: 8px; }
     #paper.density-min .authors            { font-size: 12px; line-height: 1.35; }
     #paper.density-min .affiliations       { font-size: 10px; margin-bottom: 4px; }
