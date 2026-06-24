@@ -6,7 +6,7 @@ node scripts/validate-data.mjs
 rm -rf dist
 mkdir -p dist
 
-cp datahub.html dist/
+cp index.html dist/
 cp paper.html dist/
 cp "Living Layers.html" dist/
 cp data.json dist/
