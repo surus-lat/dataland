@@ -141,7 +141,7 @@
     const color    = hover ? '#aceeC0' : 'rgba(255,255,255,0.42)';
     const dotColor = hover ? '#aceeC0' : 'rgba(255,255,255,0.32)';
     return (
-      <a href="/manuscript.html"
+      <a href="/paper"
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         style={{ position: 'absolute', top: 50, left: 'clamp(16px, 8vw, 56px)', zIndex: 6,

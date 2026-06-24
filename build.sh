@@ -7,7 +7,6 @@ rm -rf dist
 mkdir -p dist
 
 cp datahub.html dist/
-cp manuscript.html dist/
 cp paper.html dist/
 cp "Living Layers.html" dist/
 cp data.json dist/
