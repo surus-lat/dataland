@@ -1072,9 +1072,13 @@
       }
     });
 
-    // Manual page-snap on scroll-end
+    // Manual page-snap on scroll-end.
+    // Disabled on mobile (<=600px): the 130ms snap timer fires inside iOS Safari's
+    // touch-momentum window, so the smooth-scroll fights native rubber-banding and
+    // small thumb-flicks get yanked back to top. Kept in sync with --mobile-max / MOBILE_BREAKPOINT.
     window.addEventListener('scroll', function() {
       if (window.__aiMode || isSnapping) return;
+      if (window.innerWidth <= 600) return;
       clearTimeout(snapTimer);
       snapTimer = setTimeout(function() {
         var target = __page === 1 ? window.innerHeight : 0;
