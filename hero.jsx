@@ -220,8 +220,9 @@
           background: 'linear-gradient(to bottom, rgba(10,13,20,0.34) 0%, transparent 30%, transparent 72%, rgba(10,13,20,0.40) 100%)' }} />
 
         {/* Lat/long whisper — top-right, outside scale. clamp() so it doesn't collide
-            with the nav-manifest at 360px while leaving desktop pixel-identical. */}
-        <div style={{ position: 'absolute', top: 50, right: 'clamp(16px, 8vw, 56px)', zIndex: 6,
+            with the nav-manifest at 360px while leaving desktop pixel-identical.
+            Hidden on mobile via .hero-latlong to free room for the manuscript link. */}
+        <div className="hero-latlong" style={{ position: 'absolute', top: 50, right: 'clamp(16px, 8vw, 56px)', zIndex: 6,
           fontFamily: MONO, fontSize: 'clamp(8px, 2.5vw, 10px)', letterSpacing: '0.18em', textTransform: 'uppercase',
           color: 'rgba(255,255,255,0.42)', textShadow: '0 1px 8px rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>

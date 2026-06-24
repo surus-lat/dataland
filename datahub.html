@@ -123,6 +123,9 @@
       /* Fix #8: always-visible thin horizontal scrollbar on the data table */
       [data-table-scroll]::-webkit-scrollbar { height: 4px; }
       [data-table-scroll]::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.30); }
+
+      /* Lat/long whisper overlaps the Manuscript link on narrow screens — hide it on mobile. */
+      .hero-latlong { display: none; }
     }
 
     /* ── Hero (top page) — DatahubHero renders inside ── */
