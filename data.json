@@ -1,15 +1,26 @@
 {
   "tasks_supported": [
-    "transcribe"
+    "transcribe", 
+    "extract", 
+    "classify"
   ],
   "input_type": [
-    "audio"
+    "audio", 
+    "text",
+    "image"
+
   ],
   "output_type": [
-    "text"
+    "audio", 
+    "text",
+    "image"
   ],
   "domains": [
-    "general"
+    "general", 
+    "legal", 
+    "medical",
+    "agro", 
+    "manufacturing"
   ],
   "languages": [
     "es",
