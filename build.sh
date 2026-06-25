@@ -2,6 +2,7 @@
 set -euo pipefail
 
 node scripts/validate-data.mjs
+node scripts/gen-readme.mjs
 
 rm -rf dist
 mkdir -p dist

@@ -1,0 +1,11 @@
+{
+  "_": "Source of truth for the Tools section in README.md. Edit here, then run `node scripts/gen-readme-tools.mjs` (or just `bash build.sh`) to regenerate the README block. Listed tools are optional — the registry is fully usable without them.",
+  "tools": [
+    {
+      "name": "url-to-dataset-record",
+      "what": "paste a HuggingFace (or other) dataset URL → drafts a validated record matching the registry vocabularies and opens a PR appending it to `data.json`.",
+      "requires": "Claude Code + the gstack skillpack",
+      "home": "https://github.com/garryslist/gstack (`skills/url-to-dataset-record/`)"
+    }
+  ]
+}

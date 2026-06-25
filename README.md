@@ -1,52 +1,76 @@
-# Datahub
+<p align="center">
+  <img src="uploads/readme-hero.png" alt="datahub" width="860">
+</p>
 
-**A living, open registry of AI Data — built by and for Latin America.**
+<p align="center">
+  <a href="https://datahub.lat"><code>datahub.lat</code></a>
+  &nbsp;·&nbsp;
+  <code>::missing data::</code>
+</p>
 
-Open source. Open data. Anyone can add a record.
+---
 
-## What lives here
+an open, community-driven registry of Latin-American datasets.
 
-The "database" is a single file: [`data.json`](./data.json). It catalogs **datasets** — corpora used to train or evaluate AI systems, especially LATAM-language data.
-
-Records are indexed by the task they support (`transcribe`, …), the medium fed in (`audio`, `text`, `image`, …), the medium produced (`text`, `audio`, …), the domain (`general`, `medical`, `legal`, `finance`, …), and the language. The frontend at [`datahub.html`](./datahub.html) is a searchable explorer with an animated hero and a machine-readable signal view.
-
-## Why LATAM-first
-
-The `languages` vocabulary is the most visible signal of this stance:
-
-- One Spanish variant per LATAM country (`es-AR`, `es-BO`, `es-CL`, `es-CO`, `es-MX`, `es-PE`, `es-UY`, `es-VE`, …)
-- Brazilian Portuguese (`pt-BR`)
-- Coarse fallbacks (`es`, `pt`) for datasets where the source page doesn't resolve sub-variants — a record reading `["es"]` means "Spanish, breakdown not stated"; `["es-AR", "es-MX"]` means "specifically Argentinian and Mexican Spanish"
-- The major indigenous languages of the region (`qu` Quechua, `gn` Guarani, `ay` Aymara)
-- Utility values: `en`, `Multilingual` (multiple *different* languages, not multiple Spanish variants), `N/A`
-
-European Spanish and European Portuguese are intentionally **out of scope**. If a system was built for or evaluated on a LATAM variant, it belongs here. If you want to add an indigenous language we missed, open a PR — the vocabulary is meant to grow.
-
-## Run locally
-
-```sh
-python3 -m http.server 8000
+```
+> _ ::missing data::
 ```
 
-Open <http://localhost:8000/datahub.html>.
+LATAM datasets exist — they sit on HuggingFace, in the Mozilla Foundation,
+in the Internet Archive, in Chinese hubs, in the appendix of university
+papers. there's no shared index pointing to them. this is the shared index.
 
-No build step, no `node_modules`, no bundler. The page bootstraps React, Babel, and GSAP from CDN and renders directly.
+→ read the rationale: [`paper.html`](./paper.html) · [`datahub-abstract.md`](./datahub-abstract.md)
+→ live: [datahub.lat](https://datahub.lat)
 
-## How the data is shaped
+## ontology
 
-`data.json` is the source of truth. The shape *is* the ontology — top-level vocabulary lists declare what's allowed; records reference values from those lists:
+three nested levels, walked from general to specific — the way a
+practitioner actually searches for data.
+
+| level | what it answers | examples |
+| --- | --- | --- |
+| **task** | the verb the dataset trains or evaluates | `transcribe` |
+| **domain** | the knowledge grouping it sits in | `general`, `medical`, `legal`, `finance` |
+| **language** | the language and regional variant | `es-AR`, `es-MX`, `pt-BR`, `qu`, `gn`, `ay` |
+
+current state of the registry (auto-updated by [`scripts/gen-readme.mjs`](./scripts/gen-readme.mjs)):
+
+<!-- BEGIN STATE -->
+| axis | declared | touched by a record |
+| --- | --- | --- |
+| records | 6 | — |
+| tasks | 3 | 1 |
+| domains | 5 | 1 |
+| languages | 28 | 19 |
+| organizations | 5 | — |
+<!-- END STATE -->
+
+most cells are still `::missing data::`. that's the kickstart state, not
+the destination.
+
+European Spanish and European Portuguese are intentionally out of scope:
+if a system was built for or evaluated on a LATAM variant, it belongs here.
+Missing an indigenous language? Open a PR.
+
+## the data
+
+`data.json` is the source of truth. the shape *is* the ontology — top-level
+vocabulary lists declare what's allowed; records reference values from
+those lists, or the validator rejects the commit.
 
 ```jsonc
 {
   // primary navigational axes
-  "tasks_supported": ["transcribe", "..."],
-  "input_type":      ["audio", "text", "..."],   // medium fed in
-  "output_type":     ["text", "audio", "..."],   // medium produced
+  "tasks_supported": ["transcribe"],
+  "input_type":      ["audio", "text"],            // medium fed in
+  "output_type":     ["text", "audio"],            // medium produced
   "domains":         ["general", "medical", "legal", "finance"],
-  "languages":       ["es-AR", "es-BO", "es-CL", "...", "pt-BR", "qu", "gn", "ay", "en", "Multilingual", "N/A"],
+  "languages":       ["es-AR", "es-BO", "...", "pt-BR", "qu", "gn", "ay",
+                      "en", "Multilingual", "N/A"],
 
   // descriptive attribute vocabularies
-  "licenses":        ["CC0", "CC-BY-SA 4.0", "GPL-3.0", "..."],
+  "licenses":        ["CC0", "CC-BY-SA 4.0", "GPL-3.0"],
   "contributing_organizations": [
     { "name": "Mozilla Foundation", "logo": null }
   ],
@@ -58,8 +82,8 @@ No build step, no `node_modules`, no bundler. The page bootstraps React, Babel, 
       "input_type": "audio",           // must ∈ input_type
       "output_type": "text",           // must ∈ output_type
       "domain": "general",             // must ∈ domains
-      "languages": ["es-AR"],          // array — every entry must ∈ languages
-      "organization": "Universidad Nacional de La Plata",  // must match contributing_organizations
+      "languages": ["es-AR"],          // every entry must ∈ languages
+      "organization": "Universidad Nacional de La Plata",
       "license": "CC-BY-NC-SA 4.0",
       "model": "CordeBA",              // dataset's display name
       "year": 2024,
@@ -70,67 +94,81 @@ No build step, no `node_modules`, no bundler. The page bootstraps React, Babel, 
 }
 ```
 
-Every record is a dataset — that's the only kind. `task` is the verb the dataset trains or evaluates (the action). `input_type` is what the trained system consumes; `output_type` is what it produces. `domain` is a knowledge grouping, not a technical bucket. Derived values come from the top-level lists, not from `records`: the hero stats are `domains.length` / `languages.length` / `contributing_organizations.length`. Add a record whose `task` is not yet in `tasks_supported` and the validator will tell you to add the verb to the list first.
+every record IS a dataset — that's the only kind. add a record whose `task`
+is not yet in `tasks_supported` and the validator tells you to add the verb
+to the vocabulary first. derived stats (`domains.length`, `languages.length`,
+`contributing_organizations.length`) come from the top-level lists, not from
+`records` — vocabularies are first-class.
 
-## Contribute a record
+## contribute
 
-We especially welcome:
+the registry grows by pull request.
 
-- **LATAM datasets** — corpora in any es-XX variant, pt-BR, or indigenous languages
-- **Domain-specific corpora** in health, law, finance, and related fields from the region
+```sh
+node scripts/validate-data.mjs   # green or it doesn't land
+```
 
-Steps:
-
-1. Open [`data.json`](./data.json).
-2. If your new record uses a task, input_type, output_type, domain, language, license, or organization that doesn't exist yet, **add it to the corresponding top-level list first**.
-3. Append the record to `records` with a new `id`.
-4. Run the validator:
-   ```sh
-   node scripts/validate-data.mjs
-   ```
-   It exits 0 on success. On any vocabulary miss it prints exactly which record, which field, and which vocabulary is involved.
-5. Open a PR following [`CONTRIBUTING.md`](./CONTRIBUTING.md).
-
-If you're adding a HuggingFace dataset or a Mozilla Data Collective entry and use Claude Code, the `url-to-dataset-record` skill will fetch the dataset card and draft the record for you.
-
-### One-time hook setup
+one-time hook setup so the validator runs on every commit:
 
 ```sh
 bash scripts/install-hooks.sh
 ```
 
-This points `git` at the versioned `hooks/` directory. From then on, every commit runs the validator and rejects inconsistent data. The validator also runs as the first step of `build.sh`, so Cloudflare Pages builds fail loudly on broken data.
+the same validator runs as the first step of `build.sh`, so Cloudflare
+Pages builds fail loudly on broken data.
 
-## Deploy
+paths:
 
-The project deploys to Cloudflare Pages via the workflow in `.github/workflows/`. `build.sh` validates `data.json` and assembles `dist/`; any other static host (Netlify, GitHub Pages, S3 + CloudFront) works the same way — just serve the directory.
+- [tutorial — your first contribution](./docs/tutorial-first-contribution.md)
+- [how to add a record](./docs/howto-add-record.md)
+- [schema reference](./docs/reference-schema.md)
+- [why the schema looks this way](./docs/explanation-design.md)
+- [branch + commit conventions](./CONTRIBUTING.md)
 
-## File map
+## tools
 
-| File | Role |
+optional skills for contributors using Claude Code. edit
+[`scripts/tools-registry.json`](./scripts/tools-registry.json) and run
+`node scripts/gen-readme.mjs` (or `bash build.sh`) to regenerate.
+
+<!-- BEGIN TOOLS -->
+| skill | what it does | requires | home |
+| --- | --- | --- | --- |
+| `url-to-dataset-record` | paste a HuggingFace (or other) dataset URL → drafts a validated record matching the registry vocabularies and opens a PR appending it to `data.json`. | Claude Code + the gstack skillpack | https://github.com/garryslist/gstack (`skills/url-to-dataset-record/`) |
+<!-- END TOOLS -->
+
+## run locally
+
+```sh
+python3 -m http.server 8000
+# then open http://localhost:8000/
+```
+
+no build step, no `node_modules`, no bundler. React, Babel, and GSAP
+load from CDN.
+
+## stack
+
+| file | role |
 | --- | --- |
-| `datahub.html` | Main shell — React app, scroll choreography, dataset explorer, signal view |
-| `hero.jsx` | Hero overlay — title, lat/long, stat cluster, typewriter terminal |
-| `Living Layers.html` | Animated background — loaded as a full-bleed iframe |
-| `tweaks-panel.jsx` | Design-token utilities used by the panel |
-| `uploads/hero-bg.png` | Background photograph (2048×1153) |
-| `data.json` | The "db" — top-level vocabularies + records |
-| `scripts/validate-data.mjs` | Consistency validator (run on commit + build) |
-| `scripts/install-hooks.sh` | One-time `git config core.hooksPath hooks` |
-| `hooks/pre-commit` | Runs the validator before each commit |
-| `build.sh` | Validates `data.json`, populates `dist/` for Cloudflare Pages |
+| `index.html` | main shell — React app, scroll choreography, dataset explorer, signal view |
+| `hero.jsx` | hero overlay — title, lat/long, stat cluster, terminal |
+| `paper.html` | manuscript |
+| `Living Layers.html` | animated background — full-bleed iframe |
+| `tweaks-panel.jsx` | design-token utilities used by the panel |
+| `uploads/hero-bg.png` | background photograph (2048×1153) |
+| `data.json` | the registry — top-level vocabularies + records |
+| `scripts/validate-data.mjs` | consistency validator (commit + build) |
+| `scripts/install-hooks.sh` | one-time `git config core.hooksPath hooks` |
+| `scripts/gen-readme.mjs` | regenerate the auto-updated blocks in this README |
+| `hooks/pre-commit` | runs the validator before each commit |
+| `build.sh` | validate + assemble `dist/` for Cloudflare Pages |
 
-## Documentation
+## license & participation
 
-Deep docs live in [`docs/`](./docs/), organized by reader mode (Diataxis):
+open project. open registry. PRs welcome from anywhere, with a strong
+preference for work that increases LATAM visibility.
 
-| Doc | When to read |
-| --- | --- |
-| [Tutorial — your first contribution](./docs/tutorial-first-contribution.md) | You're new and want a hands-on walkthrough from clone to PR |
-| [How to add a record](./docs/howto-add-record.md) | You know the basics and want a task-focused reference for contributing |
-| [Schema reference](./docs/reference-schema.md) | You want the exact rules: every field, every vocabulary, every validator check |
-| [Why the schema looks this way](./docs/explanation-design.md) | You want the design rationale — LATAM-first, ontology-in-data, validator at commit + build |
-
-## License & participation
-
-Open project. Open registry. PRs welcome from anywhere, with a strong preference for work that increases LATAM visibility. If you maintain a model, dataset, or system that fits and isn't here yet — add it.
+```
+> _ ::missing data::
+```

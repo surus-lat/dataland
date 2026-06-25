@@ -2,3 +2,6 @@ dist/
 .wrangler/
 .DS_Store
 .gstack/
+.distribution/
+.plans/
+*.swp
