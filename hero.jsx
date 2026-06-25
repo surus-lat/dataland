@@ -242,7 +242,16 @@
         if (!seenLangs.has(l)) missing.push(gap(anyTask, anyDomain, l));
       }
 
-      return real.concat(missing);
+      // Interleave records and gaps so variety shows from the first cycle —
+      // otherwise the user watches 6 transcribe/general/es-* records (~24s)
+      // before any new task/domain/language appears.
+      const out = [];
+      const n = Math.max(real.length, missing.length);
+      for (let i = 0; i < n; i++) {
+        if (i < real.length)    out.push(real[i]);
+        if (i < missing.length) out.push(missing[i]);
+      }
+      return out;
     }, [data]);
 
     return (
