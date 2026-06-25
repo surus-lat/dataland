@@ -120,6 +120,13 @@
       #nav-manifest { top: 64px; right: 16px; }
       .nm-row { min-height: 44px; padding: 10px 12px; margin-bottom: 4px; }
 
+      /* Align the Manuscript link to the same vertical band as the human button
+         so the two top-corner controls share a baseline and don't overlap on
+         narrow screens. Matches #nav-manifest top (64px) + the .nm-row 44px tap
+         target; align-items:center (set inline) centers the label identically.
+         !important overrides the inline top:50 baked into the JSX. */
+      .hero-manuscript { top: 64px !important; min-height: 44px; }
+
       /* Fix #8: always-visible thin horizontal scrollbar on the data table */
       [data-table-scroll]::-webkit-scrollbar { height: 4px; }
       [data-table-scroll]::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.30); }
