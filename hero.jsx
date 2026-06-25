@@ -197,11 +197,18 @@
         ]
       : ['— DATASETS', '— DOMAINS · — LANGUAGES', '— CONTRIBUTORS'];
 
-    /* Terminal examples sourced from real records in data.json */
+    /* Terminal examples — real records first, then synthetic paths for every
+       vocab item no record exercises yet (rendered as `::missing data::`).
+       This way the animation cycles through the whole declared vocabulary,
+       and the gaps the registry exists to surface are the gaps you see. */
     const terminalPaths = useMemo(() => {
-      const records = data && data.records;
-      if (!records || !records.length) return null;
-      return records.map(r => ({
+      const records  = (data && data.records) || [];
+      const tasks    = (data && data.tasks_supported) || [];
+      const domains  = (data && data.domains) || [];
+      const langs    = (data && data.languages) || [];
+      if (!tasks.length || !domains.length || !langs.length) return null;
+
+      const real = records.map(r => ({
         tarea:   r.task    || 'unknown',
         dominio: r.domain  || 'general',
         lang:    (r.languages && r.languages[0]) || 'es',
@@ -209,6 +216,33 @@
         license: r.license || '—',
         year:    String(r.year || '—'),
       }));
+
+      const seenTasks   = new Set(records.map(r => r.task));
+      const seenDomains = new Set(records.map(r => r.domain));
+      const seenLangs   = new Set();
+      for (const r of records) for (const l of (r.languages || [])) seenLangs.add(l);
+
+      const pickSeen = (set, list, fallback) => {
+        for (const x of list) if (set.has(x)) return x;
+        return fallback;
+      };
+      const anyTask   = pickSeen(seenTasks,   tasks,   tasks[0]);
+      const anyDomain = pickSeen(seenDomains, domains, domains[0]);
+      const anyLang   = pickSeen(seenLangs,   langs,   langs[0]);
+      const gap = (tarea, dominio, lang) => ({
+        tarea, dominio, lang,
+        name: '::missing data::', license: '—', year: '—',
+      });
+
+      const missing = [];
+      for (const t of tasks)   if (!seenTasks.has(t))   missing.push(gap(t, anyDomain, anyLang));
+      for (const d of domains) if (!seenDomains.has(d)) missing.push(gap(anyTask, d, anyLang));
+      for (const l of langs) {
+        if (l === 'N/A' || l === 'Multilingual') continue;
+        if (!seenLangs.has(l)) missing.push(gap(anyTask, anyDomain, l));
+      }
+
+      return real.concat(missing);
     }, [data]);
 
     return (
