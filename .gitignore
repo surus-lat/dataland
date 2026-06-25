@@ -5,3 +5,4 @@ dist/
 .distribution/
 .plans/
 *.swp
+.claude/

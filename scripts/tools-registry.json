@@ -5,7 +5,7 @@
       "name": "url-to-dataset-record",
       "what": "paste a HuggingFace (or other) dataset URL → drafts a validated record matching the registry vocabularies and opens a PR appending it to `data.json`.",
       "requires": "Claude Code + the gstack skillpack",
-      "home": "https://github.com/garryslist/gstack (`skills/url-to-dataset-record/`)"
+      "home": "maintainer-side tooling — ask for a copy"
     }
   ]
 }

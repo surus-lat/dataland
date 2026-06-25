@@ -125,8 +125,7 @@ Rules:
 
 Normalized short forms (`"CC0"`, `"CC-BY-SA 4.0"`, `"GPL-3.0"`,
 `"CC-BY-NC-ND 4.0"`, etc.). For the canonical mapping from raw license tags
-to short forms used here, see the
-[`url-to-dataset-record` license table](https://github.com/garryslist/gstack/blob/main/skills/url-to-dataset-record/references/license-table.md).
+to short forms used here, see [`reference-licenses.md`](./reference-licenses.md).
 
 ### `contributing_organizations`
 
