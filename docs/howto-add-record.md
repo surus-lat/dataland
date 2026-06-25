@@ -227,9 +227,8 @@ becomes its own record.
 For Mozilla Data Collective and other non-HF dataset URLs, the skill
 falls back to the `/scrape` skill (or `WebFetch` as a last resort) to
 pull metadata from the page. The mapping into the registry schema is
-the same as Path B. See the skill's
-[SKILL.md](https://github.com/garryslist/gstack/blob/main/skills/url-to-dataset-record/SKILL.md)
-for details.
+the same as Path B. The skill currently lives in maintainer-side tooling;
+ask if you'd like a copy.
 
 For model cards, agent pages, or benchmark leaderboards — refuse. The
 registry is datasets-only.
@@ -262,4 +261,4 @@ After your PR is open:
 - [Tutorial: your first contribution](./tutorial-first-contribution.md) — newcomer walkthrough
 - [Schema reference](./reference-schema.md) — every field, every rule
 - [Why the schema looks this way](./explanation-design.md) — design rationale
-- [`url-to-dataset-record` skill](https://github.com/garryslist/gstack/tree/main/skills/url-to-dataset-record) — the HF dataset workflow
+- `url-to-dataset-record` skill — the HF dataset workflow (maintainer-side; ask for a copy)

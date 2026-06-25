@@ -134,7 +134,7 @@ optional skills for contributors using Claude Code. edit
 <!-- BEGIN TOOLS -->
 | skill | what it does | requires | home |
 | --- | --- | --- | --- |
-| `url-to-dataset-record` | paste a HuggingFace (or other) dataset URL → drafts a validated record matching the registry vocabularies and opens a PR appending it to `data.json`. | Claude Code + the gstack skillpack | https://github.com/garryslist/gstack (`skills/url-to-dataset-record/`) |
+| `url-to-dataset-record` | paste a HuggingFace (or other) dataset URL → drafts a validated record matching the registry vocabularies and opens a PR appending it to `data.json`. | Claude Code + the gstack skillpack | maintainer-side tooling — ask for a copy |
 <!-- END TOOLS -->
 
 ## run locally
