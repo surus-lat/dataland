@@ -32,7 +32,7 @@ cd dataland
 python3 -m http.server 8000
 ```
 
-Open <http://localhost:8000/datahub.html>.
+Open <http://localhost:8000/>.
 
 You should see the Datahub hero with a stat cluster ("Domains",
 "Languages", "Organizations") and a searchable explorer below. A handful
@@ -160,7 +160,7 @@ has no records using it", which surfaces unused entries for cleanup.
 ## Step 7: See it in the browser
 
 Go back to the browser tab from Step 1 and refresh
-<http://localhost:8000/datahub.html>.
+<http://localhost:8000/>.
 
 You should see:
 

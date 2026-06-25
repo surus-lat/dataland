@@ -129,7 +129,7 @@ missing — add it to the `languages` array first.
 python3 -m http.server 8000
 ```
 
-Open <http://localhost:8000/datahub.html> and confirm your record appears
+Open <http://localhost:8000/> and confirm your record appears
 in the explorer and that any vocabulary additions show up in the filter
 options.
 
@@ -175,8 +175,7 @@ Paste the HF dataset URL into the chat with intent ("add this dataset",
 
 The skill is wired to:
 
-- Fetch the dataset card metadata via
-  `.claude/skills/url-to-dataset-record/scripts/fetch_metadata.py`
+- Fetch the dataset card metadata
 - Read the current vocabularies from `data.json`
 - Map HF fields onto registry fields (handling all the
   upstream-vs-republisher and regional-language nuances)
@@ -229,7 +228,8 @@ For Mozilla Data Collective and other non-HF dataset URLs, the skill
 falls back to the `/scrape` skill (or `WebFetch` as a last resort) to
 pull metadata from the page. The mapping into the registry schema is
 the same as Path B. See the skill's
-[SKILL.md](../.claude/skills/url-to-dataset-record/SKILL.md) for details.
+[SKILL.md](https://github.com/garryslist/gstack/blob/main/skills/url-to-dataset-record/SKILL.md)
+for details.
 
 For model cards, agent pages, or benchmark leaderboards — refuse. The
 registry is datasets-only.
@@ -262,4 +262,4 @@ After your PR is open:
 - [Tutorial: your first contribution](./tutorial-first-contribution.md) — newcomer walkthrough
 - [Schema reference](./reference-schema.md) — every field, every rule
 - [Why the schema looks this way](./explanation-design.md) — design rationale
-- [`url-to-dataset-record` skill](../.claude/skills/url-to-dataset-record/SKILL.md) — the HF dataset workflow
+- [`url-to-dataset-record` skill](https://github.com/garryslist/gstack/tree/main/skills/url-to-dataset-record) — the HF dataset workflow
