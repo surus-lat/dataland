@@ -124,8 +124,13 @@
       [data-table-scroll]::-webkit-scrollbar { height: 4px; }
       [data-table-scroll]::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.30); }
 
-      /* Lat/long whisper overlaps the Manuscript link on narrow screens — hide it on mobile. */
-      .hero-latlong { display: none; }
+      /* Mobile top-of-hero fix.
+         Both the whisper and the Manuscript link carry INLINE styles from hero.jsx
+         (display:flex and top:50), which beat plain class rules. `!important` is
+         load-bearing here — remove it and inline wins, and we're back to the
+         Manuscript-link overlap the whole exercise was meant to fix. */
+      .hero-latlong    { display: none !important; }
+      .hero-manuscript { top: 64px !important; }
     }
 
     /* ── Hero (top page) — DatahubHero renders inside ── */
