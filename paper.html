@@ -299,6 +299,17 @@
     p.body em { color: rgba(255,255,255,0.78); }
     p.body strong { color: #f0ece4; font-weight: 600; }
     p.body .term { color: #f0ece4; font-weight: 600; font-style: italic; }
+    p.body .path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86em;
+      color: #f0ece4;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 1px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    p.body .path .opt { color: rgba(228,224,216,0.55); }
 
     ul.body-list { list-style: none; padding-left: 0; margin-bottom: 16px; }
     ul.body-list li {
@@ -489,7 +500,7 @@
 
     <!-- 2. TWO MISSING LAYERS, TWO LANES OF COST -->
     <section id="s2" class="body-section">
-      <h2 class="sec-title"><span class="sec-num">02</span> Two Missing Layers, Two Lanes of Cost</h2>
+      <h2 class="sec-title"><span class="sec-num">02</span> Two missing layers, two lanes of cost</h2>
       <p class="body first">These two layers are not optional infrastructure &mdash; they are the <strong>minimum prerequisites</strong> for both building and evaluating AI systems. Without datasets, the region cannot train models, agents, or downstream systems &mdash; any of them. Without benchmarks, it cannot evaluate what it builds, and &mdash; just as critically &mdash; cannot evaluate the foreign systems already deployed across its institutions and industries. Both absences are active today.</p>
 
       <p class="body">Without a benchmark layer, industries cannot evaluate the models they procure &mdash; and adopted models can underperform silently on the very tasks they were bought to perform. Regional peculiarities matter for most industrially useful tasks; without benchmarks on those tasks, procurement decisions are made blind. The failure is silent: the model returns an output, but not the performance needed for full adoption and diffusion on the tasks that matter.</p>
@@ -505,7 +516,7 @@
 
     <!-- 3. STATE OF LATIN AMERICAN DATASETS -->
     <section id="s3" class="body-section">
-      <h2 class="sec-title"><span class="sec-num">03</span> State of Latin American Datasets</h2>
+      <h2 class="sec-title"><span class="sec-num">03</span> State of Latin American datasets</h2>
       <p class="body first">The dataset layer faces two compounding problems that must be addressed together. The first is <strong>discovery</strong>; the second is <strong>supply</strong>. They reinforce each other &mdash; which is why both must be in scope.</p>
 
       <p class="body">Latin American AI datasets exist &mdash; the problem is that they are scattered across places like Hugging Face, the Mozilla Foundation, and the appendices of research papers, with no shared index. A practitioner asking <em>which datasets can I use to train a model for medical transcription in Rioplatense Spanish?</em> can answer only by personal network or weeks of search. This is not a failure of any platform; it is the absence of a regionally relevant index.</p>
@@ -517,8 +528,8 @@
 
     <!-- 4. ONTOLOGY -->
     <section id="s4" class="body-section">
-      <h2 class="sec-title"><span class="sec-num">04</span> A Task-First Ontology for AI</h2>
-      <p class="body first">Existing dataset catalogs almost universally organize entries by <strong>input modality</strong> or by <strong>target model</strong> &mdash; we believe both are wrong for AI, because an AI model is fundamentally a <strong>program</strong> that performs a <strong>task</strong>. This is also in line with how an AI practitioner works: they don't start from <em>I have an image</em> or <em>I want to use model X</em> &mdash; they start from <em>I need a system that does Y.</em> Thus the right ontology is one organized around what an AI system <em>does</em> (e.g. extraction, classification, reasoning, transcription). The Data Hub adopts a <span class="term">task-first ontology</span> with two nested levels beneath it: <strong>domain</strong> and <strong>language</strong>.</p>
+      <h2 class="sec-title"><span class="sec-num">04</span> A task-first ontology for AI</h2>
+      <p class="body first">Existing dataset catalogs almost universally organize entries by <strong>input modality</strong> or by <strong>target model</strong> &mdash; we believe both are wrong for AI, because an AI model is fundamentally a <strong>program</strong> that performs a <strong>task</strong>. This is also in line with how an AI practitioner works: they don't start from <em>I have an image</em> or <em>I want to use model X</em> &mdash; they start from <em>I need a system that does Y.</em> Thus the right ontology is one organized around what an AI system <em>does</em> (e.g. extraction, classification, reasoning, transcription). The Data Hub adopts a <span class="term">task-first ontology</span> with two nested levels beneath it: <strong>domain</strong> and <strong>language</strong>. This is represented as <span class="path">/&lt;task<span class="opt">?</span>&gt;/&lt;domain<span class="opt">?</span>&gt;/&lt;language<span class="opt">?</span>&gt;</span>.</p>
 
       <p class="body">Domain is the second axis because a task without domain context is almost always too broad to achieve the needed performance. Within transcription, medical and legal are different datasets &mdash; vocabulary, annotation conventions, and acoustic conditions all differ. A model trained on medical transcription underperforms on legal-domain audio files even within the same language.</p>
 
@@ -531,7 +542,7 @@
 
     <!-- 5. OPEN + INCENTIVES -->
     <section id="s5" class="body-section">
-      <h2 class="sec-title"><span class="sec-num">05</span> Open by Design, Incentive-Driven by Construction</h2>
+      <h2 class="sec-title"><span class="sec-num">05</span> Open by design, incentive-driven by construction</h2>
       <p class="body first">On the geopolitical side, we prefer a <span class="term">multipolar AI world</span>, and we believe Latin America should be one of those poles &mdash; with its own technology and its own agency. This is a position against both single-pole dominance &mdash; a world where AI is defined by the United States or China alone &mdash; and against a few-pole world that excludes Latin America. The more regions that develop their own AI systems, the better; this is the region's stake in that outcome. It is not an argument against collaboration with other regions; it is an argument <em>for</em> Latin America contributing to that collaboration on its own terms.</p>
 
       <p class="body">The question of how to build it &mdash; open or closed, shared or proprietary &mdash; is a strategic choice, not a neutral technical decision. Different regions have taken different routes: some have built largely closed and proprietary AI ecosystems; others have built open and collaborative ones. Both can produce AI capability. The choice shapes who can participate and how fast a non-frontier region can close the gap.</p>
@@ -545,7 +556,7 @@
 
     <!-- 6. OPEN PROBLEMS -->
     <section id="s6" class="body-section">
-      <h2 class="sec-title"><span class="sec-num">06</span> Open Problems</h2>
+      <h2 class="sec-title"><span class="sec-num">06</span> Open problems</h2>
       <p class="body first">The Data Hub does not resolve every question implied by the dataset layer it begins to build.</p>
 
       <p class="body">Data protection, copyright, and public-data access regimes differ country by country across Latin America. The Hub cannot resolve this &mdash; these are matters of national law. What it can and must do is surface the licensing and legal-jurisdiction information of every indexed dataset, so practitioners decide with the relevant context visible.</p>
@@ -559,7 +570,7 @@
 
     <!-- 7. INVITATION -->
     <section id="s7" class="body-section">
-      <h2 class="sec-title"><span class="sec-num">07</span> A Kickstart and an Invitation</h2>
+      <h2 class="sec-title"><span class="sec-num">07</span> A kickstart and an invitation</h2>
       <p class="body first">This paper is a <span class="term">kickstart</span> &mdash; a working artifact and a position targeting the dataset layer specifically; the benchmark layer is the subject of <em>LatamBoard</em>, a companion effort. The SURUS team built the first version of the Data Hub because somebody had to begin. Together, the Data Hub and LatamBoard are an invitation &mdash; not a finished proposal &mdash; and not the work of a single team.</p>
 
       <p class="body"><strong>To companies, researchers and institutions holding data:</strong> we invite you to publish it into the Hub. Whether the dataset is a paper appendix from three years ago, an active working corpus, or an internal archive that has never been released &mdash; the Data Hub is built to receive it. Each contribution compounds the value of every prior one.</p>

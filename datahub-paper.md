@@ -29,7 +29,7 @@ This paper targets the dataset layer; the benchmark layer is addressed in LatamB
 
 ---
 
-## 2. Two Missing Layers, Two Lanes of Cost
+## 2. Two missing layers, two lanes of cost
 
 These two layers are not optional infrastructure — they are the **minimum prerequisites** for both building and evaluating AI systems. Without datasets, the region cannot train models, agents, or downstream systems — any of them. Without benchmarks, it cannot evaluate what it builds, and — just as critically — cannot evaluate the foreign systems already deployed across its institutions and industries. Both absences are active today.
 
@@ -45,7 +45,7 @@ The two lanes are not independent. The costs compound each other — and togethe
 
 ---
 
-## 3. State of Latin American Datasets
+## 3. State of Latin American datasets
 
 The dataset layer faces two compounding problems that must be addressed together. The first is **discovery**; the second is **supply**. They reinforce each other — which is why both must be in scope.
 
@@ -57,10 +57,10 @@ These two problems reinforce each other in a loop that, left alone, would persis
 
 ---
 
-## 4. A Task-First Ontology for AI
+## 4. A task-first ontology for AI
 Existing dataset catalogs almost universally organize entries by input modality or by target model — we believe both are wrong. An AI model is fundamentally a program for a task, and task is therefore the first axis. Tasks include transcription, classification, extraction, translation, forecasting, segmentation, and others. 
 
-Existing dataset catalogs almost universally organize entries by input modality or by target model — we believe both are wrong for AI, because an AI model is fundamentally a **program** that performs a **task**. This is also in line with how an AI practitioner works: he/she doesn't start from *I have an image* or *I want to use model X* — they start from *I need a system that does Y.* Thus the right ontology is one organized around what an AI system *does* (e.g. extraction, classification, reasoning, transcription, etc.). This DataHub adopts a **task-first ontology** with two nested levels: **domain** & **language**.
+Existing dataset catalogs almost universally organize entries by input modality or by target model — we believe both are wrong for AI, because an AI model is fundamentally a **program** that performs a **task**. This is also in line with how an AI practitioner works: he/she doesn't start from *I have an image* or *I want to use model X* — they start from *I need a system that does Y.* Thus the right ontology is one organized around what an AI system *does* (e.g. extraction, classification, reasoning, transcription, etc.). This DataHub adopts a **task-first ontology** with two nested levels: **domain** & **language**. This is represented as `/<task?>/<domain?>/<language?>`.
 
 Domain is the second axis because a task without domain context is almost always too broad to achieve the needed performance. Within transcription, medical and legal are different datasets — vocabulary, annotation conventions, etc. A model trained on medical transcription underperforms on legal-domain audio files even within the same language.
 
@@ -72,7 +72,7 @@ A practitioner walks this hierarchy from general to specific, and the ontology i
 
 ---
 
-## 5. Open by Design, Incentive-Driven by Construction
+## 5. Open by design, incentive-driven by construction
 
 On the geopolitical side, we prefer a **multipolar AI world**, and we believe Latin America should be one of those poles — with its own technology and its own agency. This is a position against both single-pole dominance — a world where AI is defined by the United States or China alone — and against a few-pole world that excludes Latin America. The more regions that develop their own AI systems, the better; this is the region's stake in that outcome. It is not an argument against collaboration with other regions; it is an argument *for* Latin America contributing to that collaboration on its own terms.
 
@@ -86,7 +86,7 @@ The DataHub is not designed as a static catalog but as a **continuum**: it has a
 
 ---
 
-## 6. Open Problems
+## 6. Open problems
 
 The DataHub does not resolve every question implied by the dataset layer it begins to build. 
 
@@ -99,7 +99,7 @@ Companies, universities, governments, and public bodies across Latin America hol
 
 ---
 
-## 7. A Kickstart and an Invitation
+## 7. A kickstart and an invitation
 
 This paper is a **kickstart** — a working artifact and a position targeting the dataset layer specifically; the benchmark layer is the subject of LatamBoard, a companion effort. The SURUS team built the first version of the Data Hub because somebody had to begin. Together, the Data Hub and LatamBoard are an invitation — not a finished proposal — and not the work of a single team.
 
