@@ -5,4 +5,5 @@ dist/
 .distribution/
 .plans/
 *.swp
-.claude/
+.claude/*
+!.claude/skills/
