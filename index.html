@@ -125,11 +125,11 @@
       [data-table-scroll]::-webkit-scrollbar-thumb { background: rgba(172,238,192,0.30); }
 
       /* Mobile top-of-hero fix.
-         Both the whisper and the Manuscript link carry INLINE styles from hero.jsx
-         (display:flex and top:50), which beat plain class rules. `!important` is
-         load-bearing here — remove it and inline wins, and we're back to the
-         Manuscript-link overlap the whole exercise was meant to fix. */
-      .hero-latlong    { display: none !important; }
+         The Manuscript link carries an INLINE `top:50` style from hero.jsx, so a
+         plain class rule can't move it — `!important` is load-bearing here. We
+         drop it to the same vertical baseline as #nav-manifest (top:64) so it
+         sits one row below the lat/long whisper at top:50 instead of colliding
+         with it. Whisper stays visible; overlap is resolved by row offset. */
       .hero-manuscript { top: 64px !important; }
     }
 
