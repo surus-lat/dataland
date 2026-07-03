@@ -110,3 +110,5 @@ To AI practitioners across the region: we invite you to use the DataHub and cont
 To the broader community — universities, foundations, governments, companies: help shape what the foundational infrastructure for AI in Latin America should become, contribute, and then benefit from it. The ontology will evolve, standards must be debated, and collaboration norms must be defined. None of this is one team's work — and none of the benefit accrues to a single organization.
 
 The dataset layer for Latin American AI will be built by the region, for the region, or it will not be built at all. The DataHub is one step toward that future, and we invite you to join us.
+
+**Availability.** The Data Hub is live at [https://datahub.lat](https://datahub.lat).
