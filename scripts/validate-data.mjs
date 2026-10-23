@@ -29,6 +29,19 @@ const VOCAB_KEYS = [
   'licenses',
 ];
 
+
+// Dedupe: source_url must be unique across records
+const seenUrls = new Set();
+for (const r of data.records) {
+  const lbl = "record #" + (r?.id ?? "?") + (r?.model ? ' ("' + r.model + '")' : "");
+  if (typeof r.source_url === "string" && r.source_url.length > 0) {
+    if (seenUrls.has(r.source_url)) {
+      fail(lbl + ': duplicate source_url "' + r.source_url + '"');
+    }
+    seenUrls.add(r.source_url);
+  }
+}
+
 for (const k of VOCAB_KEYS) {
   if (!Array.isArray(data[k])) fail(`top-level: "${k}" must be an array`);
 }

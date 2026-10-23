@@ -1,26 +1,29 @@
 {
   "tasks_supported": [
-    "transcribe", 
-    "extract", 
-    "classify"
+    "transcribe",
+    "extract",
+    "classify",
+    "translate"
   ],
   "input_type": [
-    "audio", 
+    "audio",
     "text",
     "image"
-
   ],
   "output_type": [
-    "audio", 
+    "audio",
     "text",
     "image"
   ],
   "domains": [
-    "general", 
-    "legal", 
+    "general",
+    "legal",
     "medical",
-    "agro", 
-    "manufacturing"
+    "healthcare",
+    "agro",
+    "manufacturing",
+    "finance",
+    "retail"
   ],
   "languages": [
     "es",
@@ -57,14 +60,33 @@
     "CC-BY-NC-SA 4.0",
     "CC-BY-SA 4.0",
     "CC0",
-    "GPL-3.0"
+    "GPL-3.0",
+    "MIT",
+    "Apache-2.0",
+    "CC-BY-4.0",
+    "CC-BY-NC-4.0"
   ],
   "contributing_organizations": [
-    { "name": "Google", "logo": null },
-    { "name": "Mozilla Foundation", "logo": null },
-    { "name": "PRESEEA", "logo": null },
-    { "name": "Universidad Nacional de La Plata", "logo": null },
-    { "name": "VoxForge", "logo": null }
+    {
+      "name": "Google",
+      "logo": null
+    },
+    {
+      "name": "Mozilla Foundation",
+      "logo": null
+    },
+    {
+      "name": "PRESEEA",
+      "logo": null
+    },
+    {
+      "name": "Universidad Nacional de La Plata",
+      "logo": null
+    },
+    {
+      "name": "VoxForge",
+      "logo": null
+    }
   ],
   "records": [
     {
@@ -73,7 +95,19 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR", "es-BO", "es-CL", "es-CO", "es-CU", "es-EC", "es-GT", "es-MX", "es-PE", "es-UY", "es-VE"],
+      "languages": [
+        "es-AR",
+        "es-BO",
+        "es-CL",
+        "es-CO",
+        "es-CU",
+        "es-EC",
+        "es-GT",
+        "es-MX",
+        "es-PE",
+        "es-UY",
+        "es-VE"
+      ],
       "organization": "PRESEEA",
       "license": "CC-BY-NC-ND 4.0",
       "model": "PRESEEA",
@@ -87,7 +121,9 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR"],
+      "languages": [
+        "es-AR"
+      ],
       "organization": "Universidad Nacional de La Plata",
       "license": "CC-BY-NC-SA 4.0",
       "model": "CordeBA",
@@ -101,7 +137,9 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR"],
+      "languages": [
+        "es-AR"
+      ],
       "organization": "Google",
       "license": "CC-BY-SA 4.0",
       "model": "google-argentinian-spanish",
@@ -115,7 +153,26 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU", "es-DO", "es-EC", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA", "es-PE", "es-PR", "es-SV", "es-UY", "es-VE"],
+      "languages": [
+        "es-AR",
+        "es-BO",
+        "es-CL",
+        "es-CO",
+        "es-CR",
+        "es-CU",
+        "es-DO",
+        "es-EC",
+        "es-GT",
+        "es-HN",
+        "es-MX",
+        "es-NI",
+        "es-PA",
+        "es-PE",
+        "es-PR",
+        "es-SV",
+        "es-UY",
+        "es-VE"
+      ],
       "organization": "Mozilla Foundation",
       "license": "CC0",
       "model": "Common Voice Scripted Speech 26.0 - Spanish",
@@ -129,7 +186,9 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es"],
+      "languages": [
+        "es"
+      ],
       "organization": "Mozilla Foundation",
       "license": "CC0",
       "model": "Common Voice Spontaneous Speech 4.0 - Spanish",
@@ -143,7 +202,9 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es"],
+      "languages": [
+        "es"
+      ],
       "organization": "VoxForge",
       "license": "GPL-3.0",
       "model": "VoxForge - Spanish",
