@@ -1,26 +1,29 @@
 {
   "tasks_supported": [
-    "transcribe", 
-    "extract", 
-    "classify"
+    "transcribe",
+    "extract",
+    "classify",
+    "translate"
   ],
   "input_type": [
-    "audio", 
+    "audio",
     "text",
     "image"
-
   ],
   "output_type": [
-    "audio", 
+    "audio",
     "text",
     "image"
   ],
   "domains": [
-    "general", 
-    "legal", 
+    "general",
+    "legal",
     "medical",
-    "agro", 
-    "manufacturing"
+    "healthcare",
+    "agro",
+    "manufacturing",
+    "finance",
+    "retail"
   ],
   "languages": [
     "es",
@@ -57,14 +60,66 @@
     "CC-BY-NC-SA 4.0",
     "CC-BY-SA 4.0",
     "CC0",
-    "GPL-3.0"
+    "GPL-3.0",
+    "MIT",
+    "Apache-2.0",
+    "CC-BY-4.0",
+    "CC-BY-NC-4.0",
+    "ODbL"
   ],
   "contributing_organizations": [
-    { "name": "Google", "logo": null },
-    { "name": "Mozilla Foundation", "logo": null },
-    { "name": "PRESEEA", "logo": null },
-    { "name": "Universidad Nacional de La Plata", "logo": null },
-    { "name": "VoxForge", "logo": null }
+    {
+      "name": "Google",
+      "logo": null
+    },
+    {
+      "name": "Mozilla Foundation",
+      "logo": null
+    },
+    {
+      "name": "PRESEEA",
+      "logo": null
+    },
+    {
+      "name": "Universidad Nacional de La Plata",
+      "logo": null
+    },
+    {
+      "name": "VoxForge",
+      "logo": null
+    },
+    {
+      "name": "endomorphosis",
+      "logo": null
+    },
+    {
+      "name": "Copernicus Argentina",
+      "logo": null
+    },
+    {
+      "name": "Agencia Eleven",
+      "logo": null
+    },
+    {
+      "name": "IBGE",
+      "logo": null
+    },
+    {
+      "name": "ARCA",
+      "logo": null
+    },
+    {
+      "name": "wrpbr",
+      "logo": null
+    },
+    {
+      "name": "SNIIM",
+      "logo": null
+    },
+    {
+      "name": "JusticeDAO",
+      "logo": null
+    }
   ],
   "records": [
     {
@@ -73,7 +128,19 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR", "es-BO", "es-CL", "es-CO", "es-CU", "es-EC", "es-GT", "es-MX", "es-PE", "es-UY", "es-VE"],
+      "languages": [
+        "es-AR",
+        "es-BO",
+        "es-CL",
+        "es-CO",
+        "es-CU",
+        "es-EC",
+        "es-GT",
+        "es-MX",
+        "es-PE",
+        "es-UY",
+        "es-VE"
+      ],
       "organization": "PRESEEA",
       "license": "CC-BY-NC-ND 4.0",
       "model": "PRESEEA",
@@ -87,7 +154,9 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR"],
+      "languages": [
+        "es-AR"
+      ],
       "organization": "Universidad Nacional de La Plata",
       "license": "CC-BY-NC-SA 4.0",
       "model": "CordeBA",
@@ -101,7 +170,9 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR"],
+      "languages": [
+        "es-AR"
+      ],
       "organization": "Google",
       "license": "CC-BY-SA 4.0",
       "model": "google-argentinian-spanish",
@@ -115,7 +186,26 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es-AR", "es-BO", "es-CL", "es-CO", "es-CR", "es-CU", "es-DO", "es-EC", "es-GT", "es-HN", "es-MX", "es-NI", "es-PA", "es-PE", "es-PR", "es-SV", "es-UY", "es-VE"],
+      "languages": [
+        "es-AR",
+        "es-BO",
+        "es-CL",
+        "es-CO",
+        "es-CR",
+        "es-CU",
+        "es-DO",
+        "es-EC",
+        "es-GT",
+        "es-HN",
+        "es-MX",
+        "es-NI",
+        "es-PA",
+        "es-PE",
+        "es-PR",
+        "es-SV",
+        "es-UY",
+        "es-VE"
+      ],
       "organization": "Mozilla Foundation",
       "license": "CC0",
       "model": "Common Voice Scripted Speech 26.0 - Spanish",
@@ -129,7 +219,9 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es"],
+      "languages": [
+        "es"
+      ],
       "organization": "Mozilla Foundation",
       "license": "CC0",
       "model": "Common Voice Spontaneous Speech 4.0 - Spanish",
@@ -143,13 +235,226 @@
       "input_type": "audio",
       "output_type": "text",
       "domain": "general",
-      "languages": ["es"],
+      "languages": [
+        "es"
+      ],
       "organization": "VoxForge",
       "license": "GPL-3.0",
       "model": "VoxForge - Spanish",
       "year": 2026,
       "source_url": "https://mozilladatacollective.com/datasets/cmp2ggvbx00lvmp07i0xqlntr",
       "description": "VoxForge Spanish-language read-speech corpus — 23,537 utterances totaling 53 hours of audio from at least 483 volunteers, contributed since the project's launch to seed open-source ASR. Released GPL-3.0 as WAV with TSV transcripts; regional Spanish variants are present but not coded per-speaker, so the language is tagged at the coarse es level."
+    },
+    {
+      "id": 7,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "legal",
+      "languages": [
+        "es"
+      ],
+      "organization": "endomorphosis",
+      "license": "CC-BY-4.0",
+      "model": "ipfs_argentina_provincial_laws",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/endomorphosis/ipfs_argentina_provincial_laws",
+      "description": "Leyes y decretos-ley de la Provincia de Buenos Aires from normas.gba.gob.ar (official provincial normative system). 106,628 article-level rows in parquet. Pipeline HTML-to-plain-text with conservation gates. Part of endomorphosis world-municipal-law project, AR-B jurisdiction."
+    },
+    {
+      "id": 8,
+      "task": "extract",
+      "input_type": "image",
+      "output_type": "text",
+      "domain": "general",
+      "languages": [
+        "es",
+        "en"
+      ],
+      "organization": "Copernicus Argentina",
+      "license": "CC-BY-4.0",
+      "model": "geofuego-formosa-2026",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/copernicus-argentina/geofuego-formosa-2026",
+      "description": "Satellite-derived wildfire reconstruction for Formosa province (Chaco seco), September 2026. 11,786 fire detections from NASA FIRMS VIIRS, 53,873 ha fire footprint (82% native forest), 9,644 ha burned area measured by dNBR Sentinel-2/Landsat. DOI: 10.5281/zenodo.23602671."
+    },
+    {
+      "id": 9,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "general",
+      "languages": [
+        "es",
+        "en"
+      ],
+      "organization": "Copernicus Argentina",
+      "license": "CC-BY-4.0",
+      "model": "el-nino-2026-crecida-octubre",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/copernicus-argentina/el-nino-2026-crecida-octubre",
+      "description": "Daily water levels for El Nino 2026 October flood event: 32 hydrometric scales across Parana (22), Iguazu (1), and Uruguay (9) rivers, 1 Sep to 23 Oct 2026. 1,728 rows. Source: Prefectura Naval Argentina via INA. DOI: 10.5281/zenodo.23600160."
+    },
+    {
+      "id": 10,
+      "task": "classify",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "retail",
+      "languages": [
+        "es"
+      ],
+      "organization": "Agencia Eleven",
+      "license": "CC-BY-4.0",
+      "model": "radar-ia-ecommerce-mexico-2026",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/AgenciaEleven/radar-ia-ecommerce-mexico-2026",
+      "description": "Radar IA eCommerce Mexico 2026: which sites are cited by ChatGPT, AI Overviews, and Gemini for Mexican purchase queries. 19,950 queries per assistant (59,850 total), 13 categories, top sites by reach. First LATAM dataset measuring LLM citation in e-commerce. DOI: 10.5281/zenodo.23484475."
+    },
+    {
+      "id": 11,
+      "task": "classify",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "general",
+      "languages": [
+        "pt-BR"
+      ],
+      "organization": "IBGE",
+      "license": "CC-BY-4.0",
+      "model": "ibge-nomes-no-brasil-2022",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/olob0/ibge-nomes-no-brasil-2022",
+      "description": "Names in Brazil 2022 (IBGE Census): 128K first names + 202K surnames, 6.4M rows in relational parquet. Frequency, ranking, distribution by sex, median age, decade, state, and municipality (5,570). Official source: IBGE public API censo2022.ibge.gov.br/nomes/."
+    },
+    {
+      "id": 12,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "finance",
+      "languages": [
+        "es"
+      ],
+      "organization": "ARCA",
+      "license": "CC-BY-4.0",
+      "model": "arca-importaciones-argentina",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/alexbozz1/arca-importaciones-argentina",
+      "description": "Argentine imports 2017-2026 from ARCA (ex AFIP): 44M rows in parquet, two granularities (detailed items with NCM codes + historical aggregates). Documented pipeline, coverage Feb 2017 to Aug 2026. DuckDB-queryable via HuggingFace. Public foreign trade data."
+    },
+    {
+      "id": 13,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "general",
+      "languages": [
+        "es",
+        "en"
+      ],
+      "organization": "Copernicus Argentina",
+      "license": "CC-BY-4.0",
+      "model": "parana-alturas-historicas-1900-2026",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/copernicus-argentina/parana-alturas-historicas-1900-2026",
+      "description": "Historical daily water levels for 22 Parana/Delta hydrometric scales from 1900 to 2026 (Rosario since 1900). 711,374 station-days, 32MB. Source: Prefectura Naval Argentina via INA. Includes 1983 flood per-scale comparison against official alert/evacuation levels."
+    },
+    {
+      "id": 14,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "legal",
+      "languages": [
+        "pt"
+      ],
+      "organization": "wrpbr",
+      "license": "ODbL",
+      "model": "legislacao-federal-brasileira",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/wrpbr/legislacao-federal-brasileira",
+      "description": "Brazilian federal legislation in Markdown: Constitution, ordinary/complementary/delegated laws, decree-laws. 29,413 texts from Normas.leg.br (Senado Federal) + ctresb/leis, collected by OKF Index. Schema with ementa, URN, situacao, fonte. Snapshot 2026-10-20."
+    },
+    {
+      "id": 15,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "agro",
+      "languages": [
+        "es"
+      ],
+      "organization": "SNIIM",
+      "license": "CC-BY-NC-SA 4.0",
+      "model": "sniim-mexico-sample",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/dar4huggingface/sniim-mexico-sample",
+      "description": "SNIIM (Sistema Nacional de Informacion e Integracion de Mercados, Secretaria de Economia MX) wholesale market prices: sample years 2000 and 2025 across all sectors (agricultural, livestock, fisheries, 47 endpoints). Prices in MXN. Full 1998-present is commercial; open NC sample."
+    },
+    {
+      "id": 16,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "legal",
+      "languages": [
+        "es"
+      ],
+      "organization": "endomorphosis",
+      "license": "CC-BY-4.0",
+      "model": "ipfs_mexico_municipal_laws",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/endomorphosis/ipfs_mexico_municipal_laws",
+      "description": "Municipal regulations and ordinances from Mexico: pilot seed + tranches 1-2 covering 31 of 2,475 municipalities in 16 states, 48 documents. 11,503 rows with 19-column schema from the world-municipal-law program. Jurisdiction IDs are INEGI geostatistical codes. Coverage report included."
+    },
+    {
+      "id": 17,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "legal",
+      "languages": [
+        "es"
+      ],
+      "organization": "endomorphosis",
+      "license": "CC-BY-4.0",
+      "model": "ipfs_peru_municipal_laws",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/endomorphosis/ipfs_peru_municipal_laws",
+      "description": "Peruvian municipal normative acts from gob.pe official section: batch 1 with 845 laws (Lima Metropolitan council agreements) + batch 2 with 3,873 laws (2,555 ordinances + 1,318 mayoral decrees, 9 Lima/Callao municipalities). OCR Tesseract spa 250dpi (27,189 pages, mean confidence 92%). Quality flags in metadata."
+    },
+    {
+      "id": 18,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "legal",
+      "languages": [
+        "es"
+      ],
+      "organization": "JusticeDAO",
+      "license": "CC-BY-4.0",
+      "model": "ipfs_mexico_municipal_laws_ir",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/justicedao/ipfs_mexico_municipal_laws_ir",
+      "description": "IR/GraphRAG release of ipfs_mexico_municipal_laws (pinned revision 8f814b1d): 12,419 canonical documents, BM25 index (91,717 terms, 1,203,988 postings), 384d gte-small vectors, graph with 46,960 nodes and 62,095 edges. 10 parquet configs with zstd compression."
+    },
+    {
+      "id": 19,
+      "task": "extract",
+      "input_type": "text",
+      "output_type": "text",
+      "domain": "legal",
+      "languages": [
+        "es"
+      ],
+      "organization": "JusticeDAO",
+      "license": "CC-BY-4.0",
+      "model": "ipfs_peru_municipal_laws_ir",
+      "year": 2026,
+      "source_url": "https://huggingface.co/datasets/justicedao/ipfs_peru_municipal_laws_ir",
+      "description": "IR/GraphRAG release of ipfs_peru_municipal_laws, same country-laws-ir-graphrag/v1 layout: corpus + BM25 index + vector embeddings + knowledge graph + adjacency matrix. 10 parquet configs with zstd compression."
     }
   ]
 }
